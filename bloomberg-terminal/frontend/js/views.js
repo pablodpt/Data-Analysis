@@ -5,7 +5,7 @@ let viewTimer = null;
 function clearViewTimer() { if (viewTimer) { clearInterval(viewTimer); viewTimer = null; } }
 
 const FN_TITLES = { TOP: "TOP — MARKET OVERVIEW", GP: "GP — PRICE GRAPH", DES: "DES — DESCRIPTION",
-  FA: "FA — FINANCIAL ANALYSIS", N: "N — NEWS", ECO: "ECO — ECONOMICS", W: "W — WATCHLIST", HELP: "HELP" };
+  FA: "FA — FINANCIAL ANALYSIS", SCR: "SCR — STOCK SCREENER", N: "N — NEWS", ECO: "ECO — ECONOMICS", W: "W — WATCHLIST", HELP: "HELP" };
 
 function loading(el, msg = "loading…") { el.innerHTML = `<div class="muted" style="padding:20px">${esc(msg)}</div>`; }
 function verror(el, msg, retry) {
@@ -204,6 +204,149 @@ async function vFA(el) {
   } catch (e) { verror(el, `financials for ${sym} failed: ` + e.message, () => vFA(el)); }
 }
 
+/* ================= SCR (screener) ================= */
+const SCR_DEFAULTS = { minPrice: "", maxPrice: "", minMktCapB: "", maxMktCapB: "", minPE: "", maxPE: "",
+  minDivY: "", maxDivY: "", minChgPct: "", maxChgPct: "", minVolumeM: "", minWeek52: "", maxWeek52: "",
+  sectors: [], sort: "mktCap", dir: "desc", limit: 50 };
+const SCR_PRESETS = {
+  "MEGA CAPS": { minMktCapB: 200, sort: "mktCap", dir: "desc" },
+  "VALUE": { maxPE: 15, minDivY: 1, sort: "pe", dir: "asc" },
+  "HIGH YIELD": { minDivY: 3, sort: "divYield", dir: "desc" },
+  "MOMENTUM": { minChgPct: 2, minVolumeM: 10, sort: "pct", dir: "desc" },
+  "OVERSOLD": { maxWeek52: 15, sort: "week52pos", dir: "asc" },
+  "BIG TECH": { sectors: ["Technology"], minMktCapB: 100, sort: "mktCap", dir: "desc" },
+};
+function ffield(label, a, b) {
+  return `<div class="ffield"><label>${label}</label><div class="frow">${a}${b || ""}</div></div>`;
+}
+async function vScreener(el) {
+  clearViewTimer();
+  loading(el, "loading universe…");
+  try {
+    if (!state.scrU) state.scrU = await api("/api/screener/universe");
+  } catch (e) { verror(el, "screener universe failed: " + e.message, () => vScreener(el)); return; }
+  const F = { ...SCR_DEFAULTS, ...(store.get("scr", {})) };
+  const num = (k, ph) => `<input class="txt" data-f="${k}" placeholder="${ph}" value="${esc(F[k] ?? "")}" style="width:100%">`;
+  el.innerHTML = `
+    <div class="toolbar"><span class="muted">PRESETS:</span>
+      ${Object.keys(SCR_PRESETS).map(p => `<button class="btn" data-preset="${p}">${p}</button>`).join("")}
+      <button class="btn" data-preset="__clear">CLEAR</button>
+      <span class="muted">universe: ${state.scrU.count} US stocks + ETFs</span>
+    </div>
+    <div class="fgrid">
+      ${ffield("PRICE $", num("minPrice", "min"), num("maxPrice", "max"))}
+      ${ffield("MKT CAP $B", num("minMktCapB", "min"), num("maxMktCapB", "max"))}
+      ${ffield("P/E", num("minPE", "min"), num("maxPE", "max"))}
+      ${ffield("DIV YLD %", num("minDivY", "min"), num("maxDivY", "max"))}
+      ${ffield("DAY CHG %", num("minChgPct", "min"), num("maxChgPct", "max"))}
+      ${ffield("VOLUME ≥ M", num("minVolumeM", "min"))}
+      ${ffield("52W POS %", num("minWeek52", "0–100"), num("maxWeek52", "0–100"))}
+      <div class="ffield"><label>SORT</label>
+        <select class="sel" data-f="sort" style="width:100%">${["mktCap", "price", "pct", "volume", "pe", "divYield", "week52pos", "beta", "symbol"].map(s => `<option ${F.sort === s ? "selected" : ""}>${s}</option>`).join("")}</select>
+        <div class="seg" id="scrDir" style="margin-top:4px">
+          <button data-d="desc" class="${F.dir !== "asc" ? "on" : ""}">▼ DESC</button>
+          <button data-d="asc" class="${F.dir === "asc" ? "on" : ""}">▲ ASC</button>
+        </div></div>
+    </div>
+    <div class="toolbar"><span class="muted">SECTORS:</span>
+      <div class="pills" id="scrSectors">${state.scrU.sectors.map(s => `<label class="pill ${(F.sectors || []).includes(s) ? "on" : ""}"><input type="checkbox" value="${esc(s)}" ${(F.sectors || []).includes(s) ? "checked" : ""} hidden>${esc(s)}</label>`).join("")}</div>
+    </div>
+    <div class="toolbar">
+      <select class="sel" data-f="limit">${[25, 50, 100, 200].map(n => `<option ${+F.limit === n ? "selected" : ""}>${n}</option>`).join("")}</select>
+      <button class="btn primary" id="scrRun">RUN SCREEN</button>
+      <button class="btn" id="scrCsv">CSV ⭳</button>
+      <span class="muted" id="scrMeta"></span>
+    </div>
+    <div id="scrOut"><div class="muted">…</div></div>`;
+
+  const collect = () => {
+    const g = (k) => {
+      const raw = (el.querySelector(`[data-f="${k}"]`)?.value ?? "").trim();
+      if (k === "sort") return raw || "mktCap";
+      if (k === "limit") return parseInt(raw, 10) || 50;
+      if (raw === "") return null;
+      const v = parseFloat(raw);
+      return isNaN(v) ? null : v;
+    };
+    const w52 = (k) => { const v = g(k); return v === null ? null : v / 100; };
+    return {
+      minPrice: g("minPrice"), maxPrice: g("maxPrice"),
+      minMktCapB: g("minMktCapB"), maxMktCapB: g("maxMktCapB"),
+      minPE: g("minPE"), maxPE: g("maxPE"),
+      minDivY: g("minDivY"), maxDivY: g("maxDivY"),
+      minChgPct: g("minChgPct"), maxChgPct: g("maxChgPct"),
+      minVolumeM: g("minVolumeM"),
+      minWeek52Pos: w52("minWeek52"), maxWeek52Pos: w52("maxWeek52"),
+      sectors: [...el.querySelectorAll("#scrSectors input:checked")].map(c => c.value),
+      sort: g("sort"), dir: el.querySelector("#scrDir button.on")?.dataset.d || "desc",
+      limit: g("limit"),
+    };
+  };
+  const renderRows = (d) => {
+    document.getElementById("scrMeta").textContent =
+      `${d.count} matches · showing ${d.returned} · mode ${d.mode} (${d.source})`;
+    const out = document.getElementById("scrOut");
+    if (!d.rows.length) { out.innerHTML = `<div class="muted" style="padding:12px">No matches — loosen the filters.</div>`; return; }
+    out.innerHTML = `<table class="t num"><thead><tr><th>Symbol</th><th class="l">Name</th><th class="l">Sector</th><th>Price</th><th>Day %</th><th>Mkt Cap</th><th>P/E</th><th>Div %</th><th>Vol</th><th class="l">52W Pos</th></tr></thead>
+    <tbody>${d.rows.map(r => `<tr class="click" data-sym="${esc(r.symbol)}">
+      <td><b style="color:var(--amber)">${esc(r.symbol)}</b></td><td class="l muted">${esc(r.name || "")}</td><td class="l muted">${esc(r.sector || "")}</td>
+      <td>${fmtPx(r.price)}</td><td class="${cls(r.pct)}">${fmtPct(r.pct)}</td><td>${fmtBig(r.mktCap)}</td>
+      <td>${r.pe === null || r.pe === undefined ? "—" : (+r.pe).toFixed(1)}</td>
+      <td>${r.divYield === null || r.divYield === undefined ? "—" : (+r.divYield).toFixed(2)}</td>
+      <td>${fmtBig(r.volume)}</td>
+      <td class="l">${r.week52pos === null || r.week52pos === undefined ? "—" : `<div class="posbar"><i style="left:${(r.week52pos * 100).toFixed(1)}%"></i></div>`}</td></tr>`).join("")}</tbody></table>`;
+    out.querySelectorAll("tr.click").forEach(tr => tr.onclick = () => goSymbol(tr.dataset.sym, "GP"));
+  };
+  const run = async () => {
+    const body = collect();
+    store.set("scr", { ...body, minWeek52: body.minWeek52Pos === null ? "" : body.minWeek52Pos * 100, maxWeek52: body.maxWeek52Pos === null ? "" : body.maxWeek52Pos * 100 });
+    document.getElementById("scrOut").innerHTML = `<div class="muted" style="padding:12px">screening ${state.scrU.count} symbols… (first live run can take ~15s on free tiers)</div>`;
+    try {
+      state.scrLast = await apiPost("/api/screener/run", body);
+      renderRows(state.scrLast);
+    } catch (e) {
+      document.getElementById("scrOut").innerHTML = `<div style="padding:12px"><span class="down">■</span> screen failed: ${esc(e.message)}</div>`;
+    }
+  };
+
+  el.querySelector("#scrSectors").onclick = (e) => {
+    const lab = e.target.closest("label.pill");
+    if (!lab) return;
+    const cb = lab.querySelector("input");
+    cb.checked = !cb.checked;
+    lab.classList.toggle("on", cb.checked);
+  };
+  el.querySelector("#scrDir").onclick = (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    el.querySelectorAll("#scrDir button").forEach(x => x.classList.toggle("on", x === b));
+  };
+  el.querySelectorAll("[data-preset]").forEach(b => b.onclick = () => {
+    const p = b.dataset.preset;
+    const v = p === "__clear" ? { ...SCR_DEFAULTS } : { ...SCR_DEFAULTS, ...SCR_PRESETS[p] };
+    for (const k of ["minPrice", "maxPrice", "minMktCapB", "maxMktCapB", "minPE", "maxPE", "minDivY", "maxDivY", "minChgPct", "maxChgPct", "minVolumeM", "minWeek52", "maxWeek52"])
+      el.querySelector(`[data-f="${k}"]`).value = v[k] ?? "";
+    el.querySelector(`[data-f="sort"]`).value = v.sort;
+    el.querySelector(`[data-f="limit"]`).value = String(v.limit ?? 50);
+    el.querySelectorAll("#scrDir button").forEach(x => x.classList.toggle("on", x.dataset.d === (v.dir || "desc")));
+    el.querySelectorAll("#scrSectors input").forEach(cb => {
+      cb.checked = (v.sectors || []).includes(cb.value);
+      cb.closest("label").classList.toggle("on", cb.checked);
+    });
+    run();
+  });
+  el.querySelector("#scrRun").onclick = run;
+  el.querySelector("#scrCsv").onclick = () => {
+    const d = state.scrLast;
+    if (!d || !d.rows?.length) { toast("Run a screen first", "err"); return; }
+    downloadCSV("screener.csv", [["symbol", "name", "sector", "price", "day_pct", "mkt_cap", "pe", "div_yield", "volume", "w52pos"],
+      ...d.rows.map(r => [r.symbol, r.name, r.sector, r.price, r.pct, r.mktCap, r.pe, r.divYield, r.volume, r.week52pos])]);
+    toast(`Exported ${d.rows.length} rows`, "ok");
+  };
+  el.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches("input.txt")) run(); });
+  run();
+}
+
 /* ================= N (news) ================= */
 function artHtml(a) {
   return `<div class="art"><div class="hd"><span class="pub">${esc(a.publisher || "—")}</span><time>${esc(ago(a.published))}</time></div>
@@ -374,13 +517,14 @@ function vHelp(el) {
       ["MSFT DES", "Company description + filings"], ["NVDA FA", "Financial statements + earnings"],
       ["N TSLA / TSLA N", "News for a ticker"], ["NEWS", "News for current ticker"],
       ["TOP", "Market overview"], ["ECO", "Economic calendar + FRED charts"],
+      ["SCR", "Stock screener — value / yield / momentum"],
       ["W", "Your watchlist + alerts"], ["HELP", "This screen"]]
       .map(([a, b]) => `<tr><td><b style="color:var(--amber)">${a}</b></td><td class="l">${b}</td></tr>`).join("")}</tbody></table>
     <p class="muted">Bloomberg style works too: <b>AAPL US EQUITY GP</b> (country/market words ignored). Just typing a name shows search matches.</p>
     <h3 class="sub">KEYBOARD</h3>
     <table class="t"><tbody>
     ${[["/", "Focus command bar"], ["Enter", "Run command"], ["Esc", "Clear / close autocomplete"],
-      ["Alt+1 … Alt+8", "Jump to TOP GP DES FA N ECO W HELP"], ["↑ / ↓", "Move in autocomplete"]]
+      ["Alt+1 … Alt+9", "Jump to TOP GP DES FA SCR N ECO W HELP"], ["↑ / ↓", "Move in autocomplete"]]
       .map(([a, b]) => `<tr><td><b style="color:var(--amber)">${a}</b></td><td class="l">${b}</td></tr>`).join("")}</tbody></table>
     <h3 class="sub">DATA & FREE KEYS</h3>
     <p class="muted">Keyless: Yahoo Finance, Stooq, FRED csv, SEC EDGAR, Google News RSS.<br>

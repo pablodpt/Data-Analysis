@@ -1,10 +1,10 @@
 /* OpenBerg app.js — boot, command bar, autocomplete, keyboard. */
 "use strict";
 
-const FNS = ["TOP", "GP", "DES", "FA", "N", "ECO", "W", "HELP"];
-const FN_ALIAS = { NEWS: "N", WL: "W", WATCH: "W", H: "HELP", "?": "HELP", CHART: "GP", ECON: "ECO" };
+const FNS = ["TOP", "GP", "DES", "FA", "SCR", "N", "ECO", "W", "HELP"];
+const FN_ALIAS = { NEWS: "N", WL: "W", WATCH: "W", H: "HELP", "?": "HELP", CHART: "GP", ECON: "ECO", SCREEN: "SCR", SCREENER: "SCR", EQS: "SCR" };
 const FILLER = new Set(["US", "USA", "UE", "EQUITY", "EQUITIES", "STOCK", "CORP", "<GO>", "GO"]);
-const RENDER = { TOP: vTop, GP: vGP, DES: vDes, FA: vFA, N: vNews, ECO: vEco, W: vWatch, HELP: vHelp };
+const RENDER = { TOP: vTop, GP: vGP, DES: vDes, FA: vFA, SCR: vScreener, N: vNews, ECO: vEco, W: vWatch, HELP: vHelp };
 
 function goSymbol(sym, fn) {
   state.symbol = sym.toUpperCase();
@@ -51,7 +51,7 @@ async function runCommand(raw) {
     return;
   }
   if (p.sym && p.fn) {
-    if (["TOP", "ECO", "W", "HELP"].includes(p.fn)) { setFn(p.fn); }
+    if (["TOP", "SCR", "ECO", "W", "HELP"].includes(p.fn)) { setFn(p.fn); }
     else {
       const exact = await resolveSymbol(p.sym, p.raw);
       if (exact) goSymbol(exact, p.fn);
@@ -86,7 +86,7 @@ function pickSearch(results, rawText) {
   acItems = results;
   box.innerHTML = results.map((r, i) => `<div data-i="${i}" class="${i === 0 ? "sel" : ""}"><b>${esc(r.symbol)}</b><span>${esc(r.name || "")}</span></div>`).join("");
   box.hidden = false;
-  box.querySelectorAll("div").forEach(d => d.onclick = () => { hideAC(); goSymbol(results[+d.dataset.i].symbol, state.fn === "TOP" || state.fn === "ECO" || state.fn === "W" ? "GP" : state.fn); });
+  box.querySelectorAll("div").forEach(d => d.onclick = () => { hideAC(); goSymbol(results[+d.dataset.i].symbol, ["TOP", "SCR", "ECO", "W"].includes(state.fn) ? "GP" : state.fn); });
   toast(`Multiple matches for “${esc(rawText)}” — pick one`, "");
   return null;
 }
@@ -103,7 +103,7 @@ function wireAutocomplete() {
     if (q.length < 1) { hideAC(); return; }
     acTimer = setTimeout(async () => {
       // don't autocomplete pure function codes
-      if (/^(TOP|GP|DES|FA|NEWS?|ECO|WATCH?|HELP)\s*$/i.test(q)) { hideAC(); return; }
+      if (/^(TOP|GP|DES|FA|SCR(EEN(ER)?)?|NEWS?|ECO|WATCH?|HELP)\s*$/i.test(q)) { hideAC(); return; }
       try {
         const r = await api("/api/search", { q, limit: 8 });
         acItems = r.results || [];
@@ -167,7 +167,7 @@ async function boot() {
     if (e.key === "/" && document.activeElement !== document.getElementById("cmdInput")) {
       e.preventDefault(); document.getElementById("cmdInput").focus();
     }
-    if (e.altKey && e.key >= "1" && e.key <= "8") {
+    if (e.altKey && e.key >= "1" && e.key <= "9") {
       e.preventDefault(); setFn(FNS[+e.key - 1]);
     }
   });

@@ -147,6 +147,17 @@ input.txt:focus, select.sel:focus { border-color: var(--amber); outline: none; }
 .card .v { font-size: 15px; font-weight: 700; }
 h3.sub { color: var(--amber); font-size: 12px; letter-spacing: 1px; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin: 16px 0 8px; }
 canvas.chart { width: 100%; display: block; background: #050506; border: 1px solid var(--line); }
+
+/* ---- screener ---- */
+.fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.ffield { background: var(--panel2); border: 1px solid var(--line); padding: 6px 8px; }
+.ffield label { display: block; color: var(--faint); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px; }
+.ffield .frow { display: flex; gap: 6px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { border: 1px solid var(--line); color: var(--dim); padding: 3px 9px; font-size: 11px; cursor: pointer; user-select: none; }
+.pill.on { border-color: var(--amber); color: var(--amber); background: #141006; }
+.posbar { position: relative; height: 8px; background: #1c1c20; border: 1px solid var(--line); min-width: 90px; }
+.posbar i { position: absolute; top: -3px; width: 3px; height: 12px; background: var(--amber); }
 .spark { width: 90px; height: 24px; }
 .tip {
   position: fixed; z-index: 99; pointer-events: none; display: none;

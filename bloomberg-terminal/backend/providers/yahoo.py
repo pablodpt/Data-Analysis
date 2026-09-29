@@ -91,6 +91,8 @@ def info(symbol: str) -> dict | None:
             "mktCap": i.get("marketCap"), "pe": i.get("trailingPE"),
             "eps": i.get("trailingEps"), "divYield": (i.get("dividendYield") or 0) * 100 if i.get("dividendYield") else None,
             "week52High": i.get("fiftyTwoWeekHigh"), "week52Low": i.get("fiftyTwoWeekLow"),
+            "beta": i.get("beta"),
+            "avgVolume": i.get("averageVolume") or i.get("averageDailyVolume10Day"),
         }
     except Exception:
         return None

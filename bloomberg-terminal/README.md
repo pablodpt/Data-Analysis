@@ -18,6 +18,7 @@ A Bloomberg-terminal-style web app for **stocks, news and macro** — powered 10
 | `AAPL` then `GP` | `AAPL US EQUITY GP` | Price chart (candles/line, volume, SMA, ranges, log scale) |
 | `MSFT DES` | `DES` | Security description, profile, key stats |
 | `NVDA FA` | `FA` | Financial analysis: income / balance / cash-flow, ratios, earnings |
+| `SCR` | `EQS` | Stock screener: 112-symbol universe, value / yield / momentum filters + presets |
 | `N TSLA` / `NEWS` | `N` | Symbol + market news feed |
 | `ECO` | `ECO` | Economic calendar + FRED charts (GDP, CPI, jobs, Fed funds, yields) |
 | `W` | `W` / `WL` | Your watchlist with live quotes, sparklines, day change |
@@ -96,13 +97,14 @@ AAPL            load Apple, open price chart (GP)
 AAPL GP         price chart          MSFT DES   description
 NVDA FA         financials           N TSLA     news for Tesla
 TOP             market overview      ECO        econ calendar + indicators
-W               watchlist            HELP       this help
+SCR             stock screener       W          watchlist
+HELP            this help
 "apple"         search (or just type + pick autocomplete)
 ```
 
 You can also type Bloomberg-style `AAPL US EQUITY GP` — country/market words are ignored.
 
-Keyboard: `/` focus command · `Enter` run · `Esc` clear · `Alt+1..7` jump to function.
+Keyboard: `/` focus command · `Enter` run · `Esc` clear · `Alt+1..9` jump to function.
 
 ## Project structure
 
@@ -137,6 +139,7 @@ GET /api/history?symbol=AAPL&range=1Y&interval=1d
 GET /api/profile?symbol=AAPL
 GET /api/financials?symbol=AAPL&statement=income&period=annual
 GET /api/earnings?symbol=AAPL
+GET /api/screener/universe         POST /api/screener/run  (filters, sort, limit)
 GET /api/news?symbol=AAPL&limit=20    GET /api/news/market?limit=20
 GET /api/market/overview              GET /api/market/movers?group=gainers
 GET /api/econ/indicators              GET /api/econ/series?id=DGS10
@@ -147,7 +150,7 @@ Interactive docs: **http://localhost:8000/docs**
 
 ## Roadmap
 
-- [ ] Screener (filter S&P 500 by P/E, yield, momentum)
+- [x] Screener (filter 112-symbol universe by P/E, yield, momentum, sector…)
 - [ ] Portfolio tracker with cost basis + P&L
 - [ ] FX / crypto / commodities tabs
 - [ ] Earnings calendar + transcripts
