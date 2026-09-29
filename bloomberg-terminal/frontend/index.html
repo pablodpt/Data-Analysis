@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenBerg — Free Bloomberg-style Terminal</title>
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23ffa100'/><text x='2' y='12' font-size='11' font-family='monospace' font-weight='bold'>B</text></svg>">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">OPENBERG</span><span class="tag">FREE TERMINAL</span></div>
+  <div class="clock" id="clock">-- -- ---- --:--:--</div>
+  <div class="badges">
+    <span class="badge" id="modeBadge" title="Data mode of last response">···</span>
+    <span class="badge dim" id="keyBadge" title="Free API keys configured">keys: —</span>
+    <span class="badge dim" title="Free data is delayed">DELAYED</span>
+  </div>
+</header>
+
+<div class="tickerbar">
+  <div class="sec" id="secBox">
+    <span class="sec-sym" id="secSym">AAPL</span>
+    <span class="sec-name" id="secName">Apple Inc.</span>
+    <span class="sec-px" id="secPx">—</span>
+    <span class="sec-chg" id="secChg">—</span>
+  </div>
+  <nav class="fns" id="fnTabs">
+    <button data-fn="TOP">TOP</button>
+    <button data-fn="GP">GP</button>
+    <button data-fn="DES">DES</button>
+    <button data-fn="FA">FA</button>
+    <button data-fn="N">N</button>
+    <button data-fn="ECO">ECO</button>
+    <button data-fn="W">W</button>
+    <button data-fn="HELP">HELP</button>
+  </nav>
+  <div class="cmd">
+    <input id="cmdInput" type="text" autocomplete="off" spellcheck="false"
+           placeholder='Command  e.g.  MSFT DES   ·   N TSLA   ·   ECO   ·   / to focus'>
+    <div class="ac" id="acBox" hidden></div>
+    <button id="goBtn" title="Run command (Enter)">&lt;GO&gt;</button>
+  </div>
+</div>
+
+<main class="grid">
+  <aside class="left">
+    <div class="panel">
+      <div class="ph">FUNCTIONS</div>
+      <ul class="fnlist" id="fnList">
+        <li data-fn="TOP"><b>TOP</b><span>Market overview</span></li>
+        <li data-fn="GP"><b>GP</b><span>Price graph</span></li>
+        <li data-fn="DES"><b>DES</b><span>Description</span></li>
+        <li data-fn="FA"><b>FA</b><span>Financial analysis</span></li>
+        <li data-fn="N"><b>N</b><span>News</span></li>
+        <li data-fn="ECO"><b>ECO</b><span>Economics</span></li>
+        <li data-fn="W"><b>W</b><span>Watchlist</span></li>
+        <li data-fn="HELP"><b>HELP</b><span>Help</span></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="ph">WATCHLIST <a href="#" id="wlEdit" title="Open watchlist">»</a></div>
+      <div id="wlMini" class="wlmini"><div class="muted">loading…</div></div>
+    </div>
+  </aside>
+
+  <section class="center panel">
+    <div class="ph" id="viewTitle">GP — PRICE GRAPH</div>
+    <div id="view"><div class="muted" style="padding:20px">loading…</div></div>
+  </section>
+
+  <aside class="right">
+    <div class="panel">
+      <div class="ph">FIRST WORD <a href="#" data-goto="N" title="Open news">»</a></div>
+      <div id="newsRail"><div class="muted">loading…</div></div>
+    </div>
+    <div class="panel">
+      <div class="ph">ECO WATCH <a href="#" data-goto="ECO" title="Open calendar">»</a></div>
+      <div id="ecoRail"><div class="muted">loading…</div></div>
+    </div>
+  </aside>
+</main>
+
+<footer class="statusbar">
+  <span id="stMode">mode: —</span>
+  <span id="stSrc">src: —</span>
+  <span class="sp"></span>
+  <span class="keys"><b>/</b> cmd · <b>↵</b> go · <b>Alt+1..8</b> fn · delayed free data, not advice</span>
+</footer>
+
+<div id="toasts"></div>
+<script src="/js/api.js"></script>
+<script src="/js/charts.js"></script>
+<script src="/js/views.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

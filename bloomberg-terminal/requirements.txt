@@ -1,0 +1,9 @@
+# OpenBerg backend — all free, no paid services
+fastapi>=0.110,<1
+uvicorn[standard]>=0.29,<1
+yfinance>=0.2.40,<1
+httpx>=0.27,<1
+pandas>=2.0,<3
+python-dotenv>=1.0,<2
+# tests
+pytest>=8.0,<9

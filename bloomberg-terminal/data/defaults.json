@@ -1,0 +1,45 @@
+{
+  "indices": [
+    {"symbol": "^GSPC", "label": "S&P 500", "stooq": "^spx", "demo_base": 5960.0},
+    {"symbol": "^IXIC", "label": "Nasdaq Comp", "stooq": "^ndq", "demo_base": 21480.0},
+    {"symbol": "^DJI", "label": "Dow Jones", "stooq": "^dji", "demo_base": 44290.0},
+    {"symbol": "^RUT", "label": "Russell 2000", "stooq": "^rut", "demo_base": 2280.0},
+    {"symbol": "^VIX", "label": "VIX", "stooq": "^vix", "demo_base": 14.6},
+    {"symbol": "^TNX", "label": "US 10Y Yield", "stooq": "10usy.b", "demo_base": 4.21, "is_yield": true},
+    {"symbol": "GC=F", "label": "Gold", "stooq": "xauusd", "demo_base": 2655.0},
+    {"symbol": "CL=F", "label": "WTI Crude", "stooq": "cl.f", "demo_base": 71.4},
+    {"symbol": "BTC-USD", "label": "Bitcoin", "stooq": "btcusd", "demo_base": 97400.0},
+    {"symbol": "EURUSD=X", "label": "EUR/USD", "stooq": "eurusd", "demo_base": 1.052}
+  ],
+  "default_watchlist": ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "META", "SPY", "QQQ"],
+  "movers_universe": ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "META", "GOOGL", "AMD", "AVGO", "JPM", "XOM", "LLY", "NFLX", "COIN", "PLTR", "SMCI", "MSTR", "GME", "AMC", "ARM"],
+  "fred_series": [
+    {"id": "GDP", "label": "Nominal GDP", "unit": "Bil. $", "demo_base": 29500.0, "freq": "Q"},
+    {"id": "GDPC1", "label": "Real GDP", "unit": "Bil. Ch.2017 $", "demo_base": 23500.0, "freq": "Q"},
+    {"id": "UNRATE", "label": "Unemployment Rate", "unit": "%", "demo_base": 4.2, "freq": "M"},
+    {"id": "CPIAUCSL", "label": "CPI (all items)", "unit": "Index 1982-84=100", "demo_base": 315.0, "freq": "M"},
+    {"id": "PCEPILFE", "label": "Core PCE", "unit": "Index 2017=100", "demo_base": 124.5, "freq": "M"},
+    {"id": "FEDFUNDS", "label": "Fed Funds Rate", "unit": "%", "demo_base": 4.33, "freq": "M"},
+    {"id": "DGS10", "label": "10Y Treasury Yield", "unit": "%", "demo_base": 4.21, "freq": "D"},
+    {"id": "DGS2", "label": "2Y Treasury Yield", "unit": "%", "demo_base": 4.05, "freq": "D"},
+    {"id": "T10Y2Y", "label": "10Y-2Y Spread", "unit": "pp", "demo_base": 0.16, "freq": "D"},
+    {"id": "PAYEMS", "label": "Nonfarm Payrolls", "unit": "Thous.", "demo_base": 159500.0, "freq": "M"},
+    {"id": "RSAFS", "label": "Retail Sales", "unit": "Mil. $", "demo_base": 725000.0, "freq": "M"},
+    {"id": "HOUST", "label": "Housing Starts", "unit": "Thous. units", "demo_base": 1350.0, "freq": "M"},
+    {"id": "INDPRO", "label": "Industrial Production", "unit": "Index 2017=100", "demo_base": 103.5, "freq": "M"},
+    {"id": "M2SL", "label": "M2 Money Supply", "unit": "Bil. $", "demo_base": 21500.0, "freq": "M"},
+    {"id": "DEXUSEU", "label": "USD/EUR", "unit": "USD per EUR", "demo_base": 1.052, "freq": "D"},
+    {"id": "VIXCLS", "label": "VIX (FRED)", "unit": "Index", "demo_base": 14.6, "freq": "D"}
+  ],
+  "calendar_rules": [
+    {"name": "Jobless Claims", "weekday": 3, "time": "08:30 ET", "importance": 2, "unit": "k"},
+    {"name": "Nonfarm Payrolls", "rule": "first_friday", "time": "08:30 ET", "importance": 3, "unit": "k"},
+    {"name": "CPI Inflation", "rule": "monthly_day_12", "time": "08:30 ET", "importance": 3, "unit": "%"},
+    {"name": "Retail Sales", "rule": "monthly_day_16", "time": "08:30 ET", "importance": 2, "unit": "%"},
+    {"name": "FOMC Decision", "rule": "every_6w_tue", "time": "14:00 ET", "importance": 3, "unit": "rate"},
+    {"name": "GDP Advance", "rule": "quarter_month2_day29", "time": "08:30 ET", "importance": 3, "unit": "%"},
+    {"name": "PPI", "rule": "monthly_day_14", "time": "08:30 ET", "importance": 2, "unit": "%"},
+    {"name": "ISM Manufacturing", "rule": "monthly_day_1", "time": "10:00 ET", "importance": 2, "unit": "idx"},
+    {"name": "Consumer Sentiment", "rule": "monthly_day_10", "time": "10:00 ET", "importance": 1, "unit": "idx"}
+  ]
+}
