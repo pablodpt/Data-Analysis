@@ -39,6 +39,9 @@ cp .env.example .env        # optional — works without keys in demo/hybrid mod
 
 Then open **http://localhost:8000**.
 
+> 🇪🇸 ¿Lo instalas en tu laptop? Guía paso a paso en español:
+> **[INSTALACION.md](INSTALACION.md)** — sin copiar archivos, sin pagar nada.
+
 ### Docker
 
 ```bash

@@ -18,3 +18,4 @@ datashader-work/pyviz-examples/*
 
 # local secrets (OpenBerg)
 .env
+.venv/
