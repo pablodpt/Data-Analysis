@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.duckdb
+*.duckdb.wal
+reports/
+/config.json
+/ledger.csv
+demo_data/
+
+demo_full/
