@@ -1,0 +1,28 @@
+{
+  "database": "market.duckdb",
+  "ledger": "ledger.csv",
+  "report_dir": "reports",
+  "base_currency": "USD",
+  "lookback_days": 365,
+  "event_days": 7,
+  "stale_days": 7,
+  "max_position_weight": 0.15,
+  "max_sector_weight": 0.35,
+  "drawdown_warning": -0.15,
+  "research": {
+    "adj_close_is_total_return": false,
+    "dividends_split_adjusted": false,
+    "max_fundamental_age_days": 45,
+    "min_sector_peers": 5,
+    "min_cross_section": 20,
+    "min_universe": 20,
+    "min_dollar_volume": 1000000,
+    "cost_bps": 10,
+    "portfolio_size": 30,
+    "max_weight": 0.15,
+    "max_sector": 0.4,
+    "min_training_sessions": 126,
+    "pca_sessions": 252,
+    "pca_components": 10
+  }
+}

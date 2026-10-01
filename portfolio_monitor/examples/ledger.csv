@@ -1,0 +1,4 @@
+date,type,symbol,quantity,price,amount,fee,currency,note
+2026-09-01,DEPOSIT,,0,0,100000,0,USD,Aportacion inicial
+2026-09-01,BUY,AAPL,10,230,0,1,USD,Ejemplo sustituir por ejecucion real
+2026-09-15,DIVIDEND,AAPL,0,0,2.50,0,USD,Dividendo neto cobrado
