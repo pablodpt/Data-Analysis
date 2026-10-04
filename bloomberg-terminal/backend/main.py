@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from . import config, demo
 from .routers import econ, market, news_router, screener, security
 
-app = FastAPI(title="OpenBerg Terminal", version="0.2.0",
+app = FastAPI(title="OpenBerg Terminal", version="0.2.1",
               description="Free Bloomberg-style terminal API (stocks, news, macro).")
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
@@ -35,7 +35,7 @@ async def health():
 async def status():
     """Config + defaults the frontend needs at boot (no secrets exposed)."""
     d = demo.defaults()
-    return {"demo_mode": config.DEMO_MODE,
+    return {"version": app.version, "demo_mode": config.DEMO_MODE,
             "has_fred_key": bool(config.FRED_API_KEY),
             "has_finnhub_key": bool(config.FINNHUB_API_KEY),
             "indices": d["indices"], "fred_series": d["fred_series"],

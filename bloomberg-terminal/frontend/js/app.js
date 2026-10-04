@@ -176,6 +176,7 @@ async function boot() {
 
   try {
     state.status = await api("/api/status");
+    document.getElementById("stVer").textContent = "v" + (state.status.version || "?");
     const kb = document.getElementById("keyBadge");
     const keys = [state.status.has_fred_key && "FRED", state.status.has_finnhub_key && "FINNHUB"].filter(Boolean);
     kb.textContent = "keys: " + (keys.join("+") || "none");

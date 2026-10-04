@@ -80,8 +80,12 @@ Luego abre <http://localhost:8000>.
 - **¿Cómo lo paro?** `Ctrl+C` en la ventana negra, o ciérrala.
 - **Windows SmartScreen / "editor desconocido"**: es normal (el script es nuestro,
   no está firmado). Pulsa "Más información → Ejecutar de todas formas".
-- **¿Cómo actualizo a una versión nueva?** Descarga el ZIP otra vez y repite los
-  pasos (o `git pull` si usaste git). Tus listas y alertas se guardan en el
-  navegador, no se pierden.
+- **¿Cómo actualizo a una versión nueva?** 1) Para el servidor (Ctrl+C en la
+  ventana negra y ciérrala). 2) Descarga el ZIP otra vez y sustituye la carpeta
+  (o `git pull` si usaste git). 3) Arranca de nuevo. 4) En el navegador pulsa
+  **Ctrl+F5** (recarga forzada: sin esto puede seguir usando archivos viejos en
+  caché). El pie de la pantalla muestra la versión (v0.2.1, …): si no cambia,
+  repite la recarga forzada. Tus listas y alertas se guardan en el navegador,
+  no se pierden.
 - **¿Ocupa mucho?** El programa en sí ~1 MB + dependencias de Python (~200 MB).
   Puedes borrar todo lo descargado excepto la carpeta `bloomberg-terminal`.

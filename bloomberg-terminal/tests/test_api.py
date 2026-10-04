@@ -20,6 +20,7 @@ def test_health_and_status():
     assert client.get("/api/health").json()["status"] == "ok"
     st = client.get("/api/status").json()
     assert st["default_watchlist"] and st["indices"]
+    assert st["version"]
 
 
 def test_quote_and_history():
