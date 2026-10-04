@@ -11,7 +11,48 @@ hit ratio, IC/IR y Sharpe.
 
 ---
 
-## 1. Ejecutar sobre TU base (recomendado)
+## 0. Windows: instalación en 4 pasos (sin saber programar)
+
+**1. Descarga la carpeta.** Elige una opción:
+
+| Opción | Cómo |
+|---|---|
+| **ZIP (más fácil)** | Descarga `sp500_quant_windows.zip`, clic derecho → *Extraer todo* → por ejemplo en `C:\sp500_quant` |
+| **Si ya tienes el repo clonado** | `git fetch origin` y luego `git checkout origin/arena/01a105cf-data-analysis -- sp500_quant` |
+| **Archivos sueltos** | Descarga cada archivo desde GitHub: `https://raw.githubusercontent.com/pablodpt/Data-Analysis/arena/01a105cf-data-analysis/sp500_quant/INSTALAR.bat` (y lo mismo con `ANALIZAR.bat`, `run_analysis.py`, `significancia.py`, `make_figures.py`, `sql/patrones.sql`) |
+
+> **Importante:** extrae el ZIP **antes** de usar los `.bat`. Si los ejecutas
+> desde dentro del ZIP, Windows no los ejecutará bien.
+
+**2. Doble clic en `INSTALAR.bat`.** Una sola vez. Hace todo esto solo:
+
+* comprueba si tienes Python (si no lo tienes, te da el comando `winget` exacto);
+* crea un entorno virtual aislado en `.venv\` (no toca tu Python del sistema);
+* instala `duckdb`, `pandas`, `numpy`, `scipy` y `matplotlib`;
+* verifica que todo importa correctamente.
+
+**3. Doble clic en `ANALIZAR.bat`.** Te pedirá la ruta de tu base. Puedes:
+
+* escribir la ruta completa, o
+* **arrastrar el archivo `.duckdb` encima de `ANALIZAR.bat`**, o
+* escribir `demo` para que descargue y construya una base de ejemplo.
+
+La ruta se guarda en `db_path.txt`, así que las siguientes veces solo tienes que
+hacer doble clic. Al terminar se abre automáticamente la carpeta `resultados\`.
+
+**4. Mira los resultados** en `resultados\`:
+
+* `significancia_vs_base.csv` → las probabilidades condicionales y su significancia;
+* un CSV por patrón;
+* `figuras\patrones_sp500.png`.
+
+> **Cierra antes DBeaver / DuckDB CLI / cualquier programa que tenga la base
+> abierta**, o Windows bloqueará la lectura del archivo.
+> Los scripts abren la base con `read_only=True`: **nunca escriben en tu base**.
+
+---
+
+## 1. Ejecutar sobre TU base (a mano, si prefieres la terminal)
 
 Tu base está en `C:\Users\pablo\Documents\sp500_db\db\sp500.duckdb`.
 Los scripts abren la conexión en **modo `read_only=True`**: no escriben nada.
@@ -43,7 +84,7 @@ COPY (SELECT * FROM tickers) TO 'tickers.parquet' (FORMAT PARQUET);
 ## 2. Construir la réplica local (si no tienes la base a mano)
 
 ```bash
-python build_replica.py            # descarga datos públicos y crea data/sp500_replica.duckdb
+python build_replica.py            # descarga datos publicos y crea data/sp500_replica.duckdb
 ```
 
 Fuente: `plotly/datasets :: all_stocks_5yr.csv` (505 tickers, 2013-02-08 →
