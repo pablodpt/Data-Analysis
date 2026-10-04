@@ -58,27 +58,40 @@ echo.
 echo    NOTA: si tienes la base abierta en otro programa
 echo          ^(DBeaver, DuckDB CLI...^), cierrala antes.
 echo.
-
+echo [1/4] Calculando patrones ...
 ".venv\Scripts\python.exe" run_analysis.py --db "!DB!"
 if errorlevel 1 goto :error
 
+echo.
+echo [2/4] Contrastando contra la tasa base ...
 ".venv\Scripts\python.exe" significancia.py
 if errorlevel 1 goto :error
 
+echo.
+echo [3/4] Generando figuras ...
 ".venv\Scripts\python.exe" make_figures.py
 if errorlevel 1 goto :error
 
 echo.
+echo [4/4] Generando el dashboard HTML ...
+".venv\Scripts\python.exe" make_dashboard.py --db "!DB!"
+if errorlevel 1 goto :error
+
+echo.
 echo ============================================================
-echo    LISTO. Los resultados estan en la carpeta "resultados":
+echo    LISTO.
+echo.
+echo    Se abre el DASHBOARD en tu navegador.
+echo    Tambien tienes, en la carpeta "resultados":
+echo      - dashboard.html              ^(dashboard interactivo^)
+echo      - significancia_vs_base.csv   ^(probabilidades vs tasa base^)
 echo      - un CSV por patron
-echo      - significancia_vs_base.csv  ^(probabilidades vs tasa base^)
 echo      - figuras\patrones_sp500.png
 echo.
-echo    Abre RESULTADOS.md para ver la interpretacion del metodo.
+echo    Abre RESULTADOS.md para la interpretacion del metodo.
 echo ============================================================
 echo.
-start "" "resultados"
+start "" "resultados\dashboard.html"
 pause
 exit /b 0
 

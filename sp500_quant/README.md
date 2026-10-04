@@ -40,11 +40,28 @@ hit ratio, IC/IR y Sharpe.
 La ruta se guarda en `db_path.txt`, así que las siguientes veces solo tienes que
 hacer doble clic. Al terminar se abre automáticamente la carpeta `resultados\`.
 
-**4. Mira los resultados** en `resultados\`:
+**4. Mira el dashboard.** Al terminar se abre solo `resultados\dashboard.html` en tu
+navegador: un tablero interactivo (sin internet, sin servidor) con el ranking de
+señales filtrable, gráficos por quintil, eventos, momentum, estacionalidad y
+regímenes. Junto a él tienes también los CSV y `figuras\patrones_sp500.png`.
 
-* `significancia_vs_base.csv` → las probabilidades condicionales y su significancia;
-* un CSV por patrón;
-* `figuras\patrones_sp500.png`.
+### El dashboard (`resultados/dashboard.html`)
+
+* Archivo **único y autocontenido**: los datos van incrustados (no hace falta
+  servidor web ni conexión a internet; gráficos en SVG puro, sin CDN).
+* **Ranking filtrable**: por horizonte (5/21/63 días), por patrón, buscador de
+  texto y casilla *solo significativas*. Se ordena haciendo clic en las cabeceras
+  y se descarga el filtro con el botón **Descargar CSV**.
+* Cada fila muestra P(sube), el **IC95 %**, el exceso en puntos porcentuales
+  frente a la tasa base y si supera el contraste al 5 %.
+* Gráficos: probabilidad por quintil (con leyenda para ocultar series), caídas
+  extremas, tendencia SMA, eventos de 52 semanas, breakouts, momentum mensual
+  (quintiles + Sharpe L/S), estacionalidad y regímenes.
+* Regenerarlo cuando quieras:
+
+```bat
+".venv\Scripts\python.exe" make_dashboard.py --db "ruta\a\sp500.duckdb"
+```
 
 > **Cierra antes DBeaver / DuckDB CLI / cualquier programa que tenga la base
 > abierta**, o Windows bloqueará la lectura del archivo.
@@ -64,6 +81,7 @@ pip install duckdb pandas numpy scipy matplotlib
 python run_analysis.py --db "C:\Users\pablo\Documents\sp500_db\db\sp500.duckdb"
 python significancia.py
 python make_figures.py
+python make_dashboard.py       # -> resultados/dashboard.html  (ábrelo en el navegador)
 ```
 
 Resultados en `resultados/` (CSV por patrón + `resumen.json` +
@@ -113,6 +131,7 @@ pública equivalente en el entorno).
 | `run_analysis.py` | Ejecuta la suite completa y calcula hit ratios + IC Wilson, t-stats, Sharpe, IC de Spearman e IR de portfolios L/S. |
 | `significancia.py` | Contrasta cada probabilidad condicional contra la tasa base (z-test + IC95 % de Wilson). |
 | `make_figures.py` | Figura resumen de 4 paneles. |
+| `make_dashboard.py` | **Dashboard HTML interactivo** (`resultados/dashboard.html`), autocontenido y sin dependencias externas. |
 | `build_replica.py` | Construye la réplica con el esquema idéntico. |
 | `RESULTADOS.md` | **Informe**: SQL, resultados, interpretación, probabilidades y limitaciones. |
 
