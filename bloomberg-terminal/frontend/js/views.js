@@ -16,49 +16,103 @@ function verror(el, msg, retry) {
 
 /* ================= TOP ================= */
 async function vTop(el) {
-  loading(el);
+  clearViewTimer();
+  // Sections load independently: if movers hang/fail, indices still render (and vice versa).
+  el.innerHTML = `
+    <h3 class="sub">INDICES & BENCHMARKS</h3>
+    <div id="topIdx"><div class="muted" style="padding:12px">loading indices…</div></div>
+    <div id="topBreadth"></div>
+    <h3 class="sub">MOVERS — US EQUITIES <span class="muted" id="topMvMeta"></span></h3>
+    <div class="toolbar"><div class="seg" id="mvSeg">
+      ${["gainers", "losers", "actives"].map(g => `<button data-g="${g}" class="${state.moversGroup === g ? "on" : ""}">${g.toUpperCase()}</button>`).join("")}
+    </div></div>
+    <div id="topMovers"><div class="muted" style="padding:12px">loading movers…</div></div>
+    <h3 class="sub">HEATMAP <span class="muted" id="topHmMeta"></span></h3>
+    <div id="topHeat"><canvas class="chart" id="heatmap" style="height:120px"></canvas></div>
+    <div class="muted" id="topMeta" style="margin-top:6px"></div>`;
+  el.querySelectorAll("#mvSeg button").forEach(btn => btn.onclick = () => {
+    state.moversGroup = btn.dataset.g;
+    el.querySelectorAll("#mvSeg button").forEach(x => x.classList.toggle("on", x === btn));
+    loadMovers();
+  });
+  loadIndices();
+  loadMovers();
+}
+
+function topMeta() {
+  const box = document.getElementById("topMeta");
+  if (box) box.textContent = `indices: ${state.topIdxMeta || "…"} · movers: ${state.topMvMeta || "…"}`;
+}
+
+async function loadIndices() {
+  const box = document.getElementById("topIdx");
+  if (!box) return;
   try {
-    const [ov, mv] = await Promise.all([
-      api("/api/market/overview"),
-      api("/api/market/movers", { group: state.moversGroup, limit: 10 }),
-    ]);
+    const ov = await api("/api/market/overview", {}, { timeout: 45000 });
+    if (!box.isConnected) return;  // user switched views mid-fetch
+    state.topIdxMeta = `${ov.mode} (${ov.source || "?"})`;
+    const idx = ov.indices || [];
     const b = ov.breadth;
     let bHtml = "";
     if (b) {
-      const tot = b.advancers + b.decliners + (b.unchanged || 0) || 1;
-      const pa = (b.advancers / tot * 100), pd = (b.decliners / tot * 100);
+      const tot = (b.advancers || 0) + (b.decliners || 0) + (b.unchanged || 0) || 1;
+      const pa = ((b.advancers || 0) / tot * 100), pd = ((b.decliners || 0) / tot * 100);
       bHtml = `<h3 class="sub">MARKET BREADTH — ${esc(b.universe || "")}</h3>
       <div style="display:flex;height:18px;border:1px solid var(--line);margin-bottom:4px">
         <div style="width:${pa}%;background:var(--up)"></div><div style="width:${pd}%;background:var(--down)"></div>
       </div>
-      <div><span class="up">▲ ${b.advancers} adv</span> · <span class="down">▼ ${b.decliners} dec</span> · ${b.unchanged ?? 0} unch</div>`;
+      <div><span class="up">▲ ${b.advancers ?? 0} adv</span> · <span class="down">▼ ${b.decliners ?? 0} dec</span> · ${b.unchanged ?? 0} unch</div>`;
     }
-    el.innerHTML = `
-      <h3 class="sub">INDICES & BENCHMARKS</h3>
+    box.innerHTML = `
       <table class="t num"><thead><tr><th>Index</th><th>Last</th><th>Chg</th><th>%</th><th class="l">Trend (1M)</th></tr></thead>
-      <tbody>${ov.indices.map((r, i) => `<tr class="click" data-sym="${esc(r.symbol)}">
+      <tbody>${idx.map((r, i) => `<tr class="click" data-sym="${esc(r.symbol)}">
         <td class="l"><b style="color:var(--amber)">${esc(r.label)}</b> <span class="muted">${esc(r.symbol)}</span></td>
         <td>${fmtPx(r.price)}</td><td class="${cls(r.change)}">${fmtChg(r.change)}</td>
         <td class="${cls(r.pct)}">${fmtPct(r.pct)}</td>
-        <td class="l"><canvas class="spark" id="sp${i}"></canvas></td></tr>`).join("")}</tbody></table>
-      ${bHtml}
-      <h3 class="sub">MOVERS — US EQUITIES</h3>
-      <div class="toolbar"><div class="seg" id="mvSeg">
-        ${["gainers", "losers", "actives"].map(g => `<button data-g="${g}" class="${state.moversGroup === g ? "on" : ""}">${g.toUpperCase()}</button>`).join("")}
-      </div></div>
+        <td class="l"><canvas class="spark" id="sp${i}"></canvas></td></tr>`).join("")}</tbody></table>`;
+    const bb = document.getElementById("topBreadth");
+    if (bb) bb.innerHTML = bHtml;
+    idx.forEach((r, i) => { const c = document.getElementById("sp" + i); if (c) drawSpark(c, r.spark); });
+    box.querySelectorAll("tr.click").forEach(tr => tr.onclick = () => goSymbol(tr.dataset.sym, "GP"));
+  } catch (e) {
+    state.topIdxMeta = "error";
+    if (box.isConnected) box.innerHTML = `<div style="padding:12px"><span class="down">■</span> indices failed: ${esc(e.message)} <button class="btn" id="idxRetry">RETRY</button></div>`;
+    const rb = document.getElementById("idxRetry");
+    if (rb) rb.onclick = loadIndices;
+  }
+  topMeta();
+}
+
+async function loadMovers() {
+  const box = document.getElementById("topMovers");
+  if (!box) return;
+  box.innerHTML = `<div class="muted" style="padding:12px">loading movers…</div>`;
+  try {
+    const mv = await api("/api/market/movers", { group: state.moversGroup, limit: 10 }, { timeout: 45000 });
+    if (!box.isConnected) return;  // user switched views mid-fetch
+    state.topMvMeta = `${mv.mode} (${mv.source || "?"})`;
+    const rows = mv.rows || [];
+    const mm = document.getElementById("topMvMeta");
+    if (mm) mm.textContent = `(${(mv.group || state.moversGroup).toUpperCase()} · ${mv.mode})`;
+    const hm = document.getElementById("topHmMeta");
+    if (hm) hm.textContent = `(${(mv.group || state.moversGroup).toUpperCase()})`;
+    box.innerHTML = `
       <table class="t num"><thead><tr><th>Symbol</th><th class="l">Name</th><th>Last</th><th>Chg</th><th>%</th><th>Vol</th></tr></thead>
-      <tbody>${mv.rows.map(r => `<tr class="click" data-sym="${esc(r.symbol)}">
+      <tbody>${rows.map(r => `<tr class="click" data-sym="${esc(r.symbol)}">
         <td><b style="color:var(--amber)">${esc(r.symbol)}</b></td><td class="l muted">${esc(r.name || "")}</td>
         <td>${fmtPx(r.price)}</td><td class="${cls(r.change)}">${fmtChg(r.change)}</td>
         <td class="${cls(r.pct)}">${fmtPct(r.pct)}</td><td>${fmtBig(r.volume)}</td></tr>`).join("")}</tbody></table>
-      <h3 class="sub">HEATMAP (${esc(mv.group.toUpperCase())})</h3>
-      <canvas class="chart" id="heatmap" style="height:120px"></canvas>
-      <div class="muted" style="margin-top:6px">as of ${esc(ov.asOf || "").replace("T", " ").slice(0, 19)} · mode: ${esc(ov.mode)} (${esc(ov.source || "")})</div>`;
-    ov.indices.forEach((r, i) => { const c = document.getElementById("sp" + i); if (c) drawSpark(c, r.spark); });
-    drawHeatmap(document.getElementById("heatmap"), mv.rows);
-    el.querySelectorAll("tr.click").forEach(tr => tr.onclick = () => goSymbol(tr.dataset.sym, "GP"));
-    el.querySelectorAll("#mvSeg button").forEach(btn => btn.onclick = () => { state.moversGroup = btn.dataset.g; vTop(el); });
-  } catch (e) { verror(el, "market overview failed: " + e.message, () => vTop(el)); }
+      <div class="muted" style="margin-top:6px">as of ${esc(mv.asOf || "").replace("T", " ").slice(0, 19)}</div>`;
+    box.querySelectorAll("tr.click").forEach(tr => tr.onclick = () => goSymbol(tr.dataset.sym, "GP"));
+    const heat = document.getElementById("heatmap");
+    if (heat && rows.length) drawHeatmap(heat, rows);
+  } catch (e) {
+    state.topMvMeta = "error";
+    if (box.isConnected) box.innerHTML = `<div style="padding:12px"><span class="down">■</span> movers failed: ${esc(e.message)} <button class="btn" id="mvRetry">RETRY</button></div>`;
+    const rb = document.getElementById("mvRetry");
+    if (rb) rb.onclick = loadMovers;
+  }
+  topMeta();
 }
 
 /* ================= GP ================= */

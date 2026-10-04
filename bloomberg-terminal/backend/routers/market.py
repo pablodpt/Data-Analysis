@@ -20,8 +20,11 @@ SCREENER_IDS = {"gainers": "day_gainers", "losers": "day_losers", "actives": "da
 async def overview():
     if want_live():
         idx_defs = demo.defaults()["indices"]
-        quotes = await asyncio.gather(*[stooq.quote(d["symbol"]) for d in idx_defs])
-        hists = await asyncio.gather(*[stooq.history(d["symbol"], "1M", "1d") for d in idx_defs])
+        # one combined gather: quotes + histories in parallel (halves worst-case wait)
+        quotes, hists = await asyncio.gather(
+            asyncio.gather(*[stooq.quote(d["symbol"]) for d in idx_defs]),
+            asyncio.gather(*[stooq.history(d["symbol"], "1M", "1d") for d in idx_defs]),
+        )
         rows, n_live = [], 0
         for d, q, h in zip(idx_defs, quotes, hists):
             if q and q.get("price"):
