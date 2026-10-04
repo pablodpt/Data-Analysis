@@ -565,6 +565,9 @@ function checkAlerts(quotes) {
 function vHelp(el) {
   clearViewTimer();
   el.innerHTML = `
+    <h3 class="sub">DIAGNOSTICS — WHY AM I SEEING DEMO DATA?</h3>
+    <div class="toolbar"><button class="btn primary" id="diagRun">RUN DIAGNOSTICS</button><span class="muted" id="diagMeta"></span></div>
+    <div id="diagOut"><div class="muted">Checks which free providers work from this machine…</div></div>
     <h3 class="sub">COMMANDS — type in the bar, press Enter (or click &lt;GO&gt;)</h3>
     <table class="t"><thead><tr><th>Command</th><th class="l">Does</th></tr></thead><tbody>
     ${[["AAPL", "Load Apple, open price chart"], ["AAPL GP / GP AAPL", "Price chart for a ticker"],
@@ -585,6 +588,23 @@ function vHelp(el) {
     Optional free keys in <b>.env</b> unlock more: <b>FRED_API_KEY</b> (800k series, 120 req/min, instant at fred.stlouisfed.org) and
     <b>FINNHUB_API_KEY</b> (~60 calls/min real-time US quotes + news + econ calendar at finnhub.io).<br><br>
     Quotes are delayed. Demo mode (amber badge) = offline simulation. Not investment advice. Not affiliated with Bloomberg.</p>`;
+  const runDiag = async () => {
+    const out = document.getElementById("diagOut"), meta = document.getElementById("diagMeta");
+    if (!out) return;
+    out.innerHTML = `<div class="muted">running checks (up to ~10s)…</div>`;
+    try {
+      const d = await api("/api/diag", {}, { timeout: 60000 });
+      const keys = (d.has_fred_key ? "FRED " : "") + (d.has_finnhub_key ? "FINNHUB" : "");
+      meta.textContent = `python ${d.python} · yfinance ${d.yfinance} · DEMO_MODE=${d.demo_mode} · keys: ${keys || "none"}`;
+      out.innerHTML = `<table class="t"><thead><tr><th>Provider</th><th>Status</th><th>Time</th><th class="l">Detail</th></tr></thead><tbody>
+        ${d.checks.map(c => `<tr><td><b style="color:var(--amber)">${esc(c.name)}</b></td><td class="${c.ok ? "up" : "down"}">${c.ok ? "OK" : "FAIL"}</td><td class="num">${c.ms}ms</td><td class="l muted">${esc(c.detail || "")}</td></tr>`).join("")}</tbody></table>
+        <div class="muted" style="margin-top:6px">If everything shows FAIL, Python on this machine can't reach the internet (firewall / antivirus / VPN?) — the app then shows simulated DEMO data instead of crashing.</div>`;
+    } catch (e) {
+      out.innerHTML = `<div><span class="down">■</span> diagnostics failed: ${esc(e.message)}</div>`;
+    }
+  };
+  document.getElementById("diagRun").onclick = runDiag;
+  runDiag();
 }
 
 /* ================= rails + header ================= */

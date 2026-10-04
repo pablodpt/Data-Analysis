@@ -9,9 +9,9 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import config, demo
-from .routers import econ, market, news_router, screener, security
+from .routers import diag, econ, market, news_router, screener, security
 
-app = FastAPI(title="OpenBerg Terminal", version="0.2.1",
+app = FastAPI(title="OpenBerg Terminal", version="0.2.2",
               description="Free Bloomberg-style terminal API (stocks, news, macro).")
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
@@ -22,6 +22,7 @@ app.include_router(screener.router)
 app.include_router(market.router)
 app.include_router(news_router.router)
 app.include_router(econ.router)
+app.include_router(diag.router)
 
 FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
 

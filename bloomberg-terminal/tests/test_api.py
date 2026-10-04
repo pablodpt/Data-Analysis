@@ -66,3 +66,11 @@ def test_econ():
 def test_frontend_served():
     r = client.get("/")
     assert r.status_code == 200 and "OpenBerg" in r.text
+
+
+def test_diag_shape():
+    d = client.get("/api/diag").json()
+    assert d["demo_mode"] == "always"
+    names = {c["name"] for c in d["checks"]}
+    assert {"yahoo", "stooq", "fred", "finnhub"} <= names
+    assert all({"name", "ok", "ms", "detail"} <= set(c) for c in d["checks"])
