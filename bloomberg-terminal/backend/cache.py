@@ -65,3 +65,8 @@ def cached(ttl: int, key_fn: Callable[..., str]):
         return s
 
     return wrap
+
+
+def clear() -> None:
+    """Empty the cache (used by tests)."""
+    _store.clear()

@@ -75,3 +75,58 @@ def test_movers_universe_fallback_live(monkeypatch):
     d = client.get("/api/market/movers", params={"group": "losers"}).json()
     assert d["mode"] == "live" and d["source"] == "stooq"
     assert len(d["rows"]) == 10
+
+
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _isolate_cache():
+    from backend.cache import clear
+    clear()
+    yield
+    clear()
+
+
+def test_gather_best_bounds_slow_providers():
+    import asyncio
+
+    from backend.routers.market import _gather_best
+
+    async def _slow():
+        await asyncio.sleep(30)
+        return {"never": True}
+
+    async def _fast():
+        return {"ok": True}
+
+    async def _boom():
+        raise RuntimeError("boom")
+
+    out = asyncio.run(_gather_best([_fast(), _slow(), _boom()], timeout=0.2))
+    assert out[0] == {"ok": True} and out[1] is None and out[2] is None
+
+
+def test_overview_cached_and_timed(monkeypatch):
+    calls = {"n": 0}
+
+    async def _counting(sym, **kw):
+        calls["n"] += 1
+        return await _q(sym)
+
+    monkeypatch.setattr(config, "DEMO_MODE", "auto")
+    monkeypatch.setattr(stooq, "quote", _counting)
+    monkeypatch.setattr(stooq, "history", _h)
+    d1 = client.get("/api/market/overview").json()
+    assert isinstance(d1["tookMs"], int)
+    n1 = calls["n"]
+    assert n1 > 0
+    d2 = client.get("/api/market/overview").json()
+    assert d2 == d1 and calls["n"] == n1  # cache hit: no new upstream calls
+
+
+def test_movers_has_tookms(monkeypatch):
+    monkeypatch.setattr(config, "DEMO_MODE", "auto")
+    monkeypatch.setattr(market, "_yahoo_screener", _scr)
+    d = client.get("/api/market/movers").json()
+    assert isinstance(d["tookMs"], int)

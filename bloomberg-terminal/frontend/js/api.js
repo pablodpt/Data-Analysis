@@ -30,14 +30,19 @@ const state = {
 async function api(path, params = {}, opts = {}) {
   const qs = new URLSearchParams(params).toString();
   const url = path + (qs ? "?" + qs : "");
+  const ms = opts.timeout || 25000;
   const ctl = new AbortController();
-  const to = setTimeout(() => ctl.abort(), opts.timeout || 25000);
+  const to = setTimeout(() => ctl.abort(), ms);
   try {
     const r = await fetch(url, { signal: ctl.signal, ...(opts.fetch || {}) });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const j = await r.json();
     if (j && j.mode) setMode(j.mode, j.source || "—");
     return j;
+  } catch (err) {
+    // Chrome reports a bare abort() as cryptic "signal is aborted without reason"
+    if (ctl.signal.aborted) throw new Error(`request timed out after ${Math.round(ms / 1000)}s`);
+    throw err;
   } finally { clearTimeout(to); }
 }
 
@@ -73,6 +78,7 @@ function fmtPx(v) {
 }
 function fmtChg(v) { return (v === null || v === undefined || isNaN(v)) ? "—" : (v >= 0 ? "+" : "") + fmtPx(v); }
 function fmtPct(v) { return (v === null || v === undefined || isNaN(v)) ? "—" : (v >= 0 ? "+" : "") + (+v).toFixed(2) + "%"; }
+function fmtMs(v) { return v === null || v === undefined ? "" : (v >= 1000 ? ` ${(v / 1000).toFixed(1)}s` : ` ${v}ms`); }
 function cls(v) { return v === null || v === undefined ? "" : (v >= 0 ? "up" : "down"); }
 function fmtBig(v) {
   if (v === null || v === undefined || isNaN(v)) return "—";

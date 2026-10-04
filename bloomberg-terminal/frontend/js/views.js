@@ -50,7 +50,7 @@ async function loadIndices() {
   try {
     const ov = await api("/api/market/overview", {}, { timeout: 45000 });
     if (!box.isConnected) return;  // user switched views mid-fetch
-    state.topIdxMeta = `${ov.mode} (${ov.source || "?"})`;
+    state.topIdxMeta = `${ov.mode} (${ov.source || "?"})${fmtMs(ov.tookMs)}`;
     const idx = ov.indices || [];
     const b = ov.breadth;
     let bHtml = "";
@@ -90,7 +90,7 @@ async function loadMovers() {
   try {
     const mv = await api("/api/market/movers", { group: state.moversGroup, limit: 10 }, { timeout: 45000 });
     if (!box.isConnected) return;  // user switched views mid-fetch
-    state.topMvMeta = `${mv.mode} (${mv.source || "?"})`;
+    state.topMvMeta = `${mv.mode} (${mv.source || "?"})${fmtMs(mv.tookMs)}`;
     const rows = mv.rows || [];
     const mm = document.getElementById("topMvMeta");
     if (mm) mm.textContent = `(${(mv.group || state.moversGroup).toUpperCase()} · ${mv.mode})`;
