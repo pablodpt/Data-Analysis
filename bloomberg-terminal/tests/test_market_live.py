@@ -12,19 +12,19 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from backend import config  # noqa: E402
 from backend.main import app  # noqa: E402
-from backend.providers import stooq  # noqa: E402
+from backend.providers import yahoo as yh  # noqa: E402
 from backend.routers import market  # noqa: E402
 
 client = TestClient(app)
 
 
-async def _q(sym, **kw):
+def _q(sym, **kw):
     return {"symbol": sym, "price": 100.0, "change": 1.5, "pct": 1.52,
             "volume": 1234567, "open": 99.0, "high": 101.0, "low": 98.0,
             "prevClose": 98.5, "name": sym}
 
 
-async def _h(sym, rng="1Y", interval="1d"):
+def _h(sym, rng="1Y", interval="1d"):
     return {"bars": [{"t": f"2026-01-{d:02d}", "o": 1.0, "h": 2.0, "l": 0.5,
                       "c": 1.5, "v": 10} for d in range(1, 11)]}
 
@@ -36,22 +36,22 @@ async def _scr(group, limit):
 
 def test_overview_all_live(monkeypatch):
     monkeypatch.setattr(config, "DEMO_MODE", "auto")
-    monkeypatch.setattr(stooq, "quote", _q)
-    monkeypatch.setattr(stooq, "history", _h)
+    monkeypatch.setattr(yh, "quote", _q)
+    monkeypatch.setattr(yh, "history", _h)
     d = client.get("/api/market/overview").json()
-    assert d["mode"] == "live" and d["source"] == "stooq"
+    assert d["mode"] == "live" and d["source"] == "yahoo"
     assert len(d["indices"]) == 10
     r = d["indices"][0]
     assert r["price"] == 100.0 and len(r["spark"]) == 10
 
 
 def test_overview_partial_live_is_mixed(monkeypatch):
-    async def _flaky(sym, **kw):
-        return None if sym == "^VIX" else await _q(sym)
+    def _flaky(sym, **kw):
+        return None if sym == "^VIX" else _q(sym)
 
     monkeypatch.setattr(config, "DEMO_MODE", "auto")
-    monkeypatch.setattr(stooq, "quote", _flaky)
-    monkeypatch.setattr(stooq, "history", _h)
+    monkeypatch.setattr(yh, "quote", _flaky)
+    monkeypatch.setattr(yh, "history", _h)
     d = client.get("/api/market/overview").json()
     assert d["mode"] == "mixed"
     assert len(d["indices"]) == 10  # demo fills the failed one
@@ -71,9 +71,9 @@ def test_movers_universe_fallback_live(monkeypatch):
 
     monkeypatch.setattr(config, "DEMO_MODE", "auto")
     monkeypatch.setattr(market, "_yahoo_screener", _none)
-    monkeypatch.setattr(stooq, "quote", _q)
+    monkeypatch.setattr(yh, "quote", _q)
     d = client.get("/api/market/movers", params={"group": "losers"}).json()
-    assert d["mode"] == "live" and d["source"] == "stooq"
+    assert d["mode"] == "live" and d["source"] == "yahoo"
     assert len(d["rows"]) == 10
 
 
@@ -110,13 +110,13 @@ def test_gather_best_bounds_slow_providers():
 def test_overview_cached_and_timed(monkeypatch):
     calls = {"n": 0}
 
-    async def _counting(sym, **kw):
+    def _counting(sym, **kw):
         calls["n"] += 1
-        return await _q(sym)
+        return _q(sym)
 
     monkeypatch.setattr(config, "DEMO_MODE", "auto")
-    monkeypatch.setattr(stooq, "quote", _counting)
-    monkeypatch.setattr(stooq, "history", _h)
+    monkeypatch.setattr(yh, "quote", _counting)
+    monkeypatch.setattr(yh, "history", _h)
     d1 = client.get("/api/market/overview").json()
     assert isinstance(d1["tookMs"], int)
     n1 = calls["n"]

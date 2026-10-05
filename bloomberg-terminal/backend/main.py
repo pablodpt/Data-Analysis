@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from . import config, demo
 from .routers import diag, econ, market, news_router, screener, security
 
-app = FastAPI(title="OpenBerg Terminal", version="0.2.3",
+app = FastAPI(title="OpenBerg Terminal", version="0.2.4",
               description="Free Bloomberg-style terminal API (stocks, news, macro).")
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],

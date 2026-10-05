@@ -72,5 +72,5 @@ def test_diag_shape():
     d = client.get("/api/diag").json()
     assert d["demo_mode"] == "always"
     names = {c["name"] for c in d["checks"]}
-    assert {"yahoo", "stooq", "fred", "finnhub"} <= names
+    assert {"yahoo", "yahoo-raw", "stooq", "fred", "finnhub"} <= names
     assert all({"name", "ok", "ms", "detail"} <= set(c) for c in d["checks"])

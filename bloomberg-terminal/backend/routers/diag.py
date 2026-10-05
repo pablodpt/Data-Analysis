@@ -58,6 +58,19 @@ async def _fred():
     return "fredgraph.csv OK"
 
 
+async def _yh_raw():
+    """Raw Yahoo screener call (no cookies/impersonation) — often EU-blocked."""
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as c:
+        r = await c.get("https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved",
+                        params={"id": "day_gainers", "count": 5},
+                        headers={"User-Agent": config.USER_AGENT})
+    j = r.json() if r.status_code == 200 else {}
+    n = len((((j.get("finance") or {}).get("result") or [{}])[0].get("quotes") or []))
+    if not n:
+        raise RuntimeError(f"HTTP {r.status_code}: no quotes in response")
+    return f"{n} quotes OK"
+
+
 async def _finnhub():
     if not config.FINNHUB_API_KEY:
         return "no key configured (optional)"
@@ -82,8 +95,9 @@ async def diag():
     except Exception as e:  # noqa: BLE001
         yfv = f"import failed: {e}"
     checks = await asyncio.gather(
-        _check("yahoo", _yahoo), _check("stooq", _stooq),
-        _check("fred", _fred), _check("finnhub", _finnhub),
+        _check("yahoo", _yahoo), _check("yahoo-raw", _yh_raw),
+        _check("stooq", _stooq), _check("fred", _fred),
+        _check("finnhub", _finnhub),
     )
     return {"demo_mode": config.DEMO_MODE, "python": platform.python_version(),
             "yfinance": yfv, "has_fred_key": bool(config.FRED_API_KEY),

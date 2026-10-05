@@ -10,7 +10,7 @@ from fastapi import APIRouter, Query
 
 from .. import config, demo
 from ..cache import get as cache_get, put as cache_put
-from ..providers import stooq
+from ..providers import yahoo
 from . import allow_demo, demo_ok, live_ok, ok, unavailable, want_live
 
 router = APIRouter(prefix="/api/market", tags=["market"])
@@ -20,6 +20,22 @@ SCREENER_IDS = {"gainers": "day_gainers", "losers": "day_losers", "actives": "da
 # Upper bound for bulk upstream fan-out: slow symbols degrade to demo
 # instead of hanging the whole response (free tiers can stall).
 BULK_TIMEOUT = 14
+
+# Gentle concurrency for bulk yfinance calls (Yahoo rate-limits bursts).
+_YH_SEM = asyncio.Semaphore(10)
+
+
+async def _limited(coro):
+    async with _YH_SEM:
+        return await coro
+
+
+async def _yh_quote(sym: str):
+    return await asyncio.to_thread(yahoo.quote, sym)
+
+
+async def _yh_hist(sym: str):
+    return await asyncio.to_thread(yahoo.history, sym, "1M", "1d")
 
 
 def _ms(t0: float) -> int:
@@ -58,8 +74,8 @@ async def overview():
         idx_defs = demo.defaults()["indices"]
         n = len(idx_defs)
         res = await _gather_best(
-            [stooq.quote(d["symbol"]) for d in idx_defs]
-            + [stooq.history(d["symbol"], "1M", "1d") for d in idx_defs]
+            [_limited(_yh_quote(d["symbol"])) for d in idx_defs]
+            + [_limited(_yh_hist(d["symbol"])) for d in idx_defs]
         )
         quotes, hists = res[:n], res[n:]
         rows, n_live = [], 0
@@ -78,7 +94,7 @@ async def overview():
                              "pct": dq["pct"], "spark": [b["c"] for b in dh[-30:]]})
         if rows:
             mode = "live" if n_live == len(rows) else ("demo" if n_live == 0 else "mixed")
-            src = "stooq" if n_live == len(rows) else ("simulated" if n_live == 0 else "stooq+simulated")
+            src = "yahoo" if n_live == len(rows) else ("simulated" if n_live == 0 else "yahoo+simulated")
             resp = ok({"asOf": datetime.now(timezone.utc).isoformat(),
                        "indices": rows, "breadth": None, "tookMs": _ms(t0)}, mode, src)
             cache_put("mkt:overview", resp, config.TTL_OVERVIEW)
@@ -112,7 +128,7 @@ async def movers(group: str = Query("gainers"), limit: int = 10):
         rows = await _universe_quotes(group, limit)
         if rows:
             resp = live_ok({"group": group, "asOf": datetime.now(timezone.utc).isoformat(),
-                            "rows": rows, "tookMs": _ms(t0)}, "stooq")
+                            "rows": rows, "tookMs": _ms(t0)}, "yahoo")
             cache_put(key, resp, config.TTL_OVERVIEW)
             return resp
     if allow_demo():
@@ -143,7 +159,7 @@ async def _yahoo_screener(group: str, limit: int) -> list[dict] | None:
 async def _universe_quotes(group: str, limit: int) -> list[dict] | None:
     try:
         syms = demo.defaults()["movers_universe"]
-        quotes = await _gather_best([stooq.quote(s) for s in syms])
+        quotes = await _gather_best([_limited(_yh_quote(s)) for s in syms])
         rows = []
         for s, q in zip(syms, quotes):
             if q and q.get("price"):
