@@ -50,7 +50,13 @@ async function apiPost(path, body) {
   const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const j = await r.json();
-  if (j && j.mode) setMode(j.mode, "watchlist");
+  if (j && j.mode) {
+    // show the dominant real provider (yahoo/stooq/...) instead of "watchlist"
+    const counts = {};
+    for (const q of j.quotes || []) if (q.source) counts[q.source] = (counts[q.source] || 0) + 1;
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    setMode(j.mode, top ? top[0] : "—");
+  }
   return j;
 }
 
