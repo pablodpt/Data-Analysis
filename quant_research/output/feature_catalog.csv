@@ -1,0 +1,55 @@
+feature,category,definition,non_missing,missing,available,used_by_ml,used_by_discovery
+return_1d,Retornos,Close(t) / Close(t-1) - 1; retorno histórico acumulado de 1 sesión(es).,3521,1,True,True,True
+return_3d,Retornos,Close(t) / Close(t-3) - 1; retorno histórico acumulado de 3 sesión(es).,3519,3,True,True,True
+return_5d,Retornos,Close(t) / Close(t-5) - 1; retorno histórico acumulado de 5 sesión(es).,3517,5,True,True,True
+return_10d,Retornos,Close(t) / Close(t-10) - 1; retorno histórico acumulado de 10 sesión(es).,3512,10,True,True,True
+return_20d,Retornos,Close(t) / Close(t-20) - 1; retorno histórico acumulado de 20 sesión(es).,3502,20,True,True,True
+rolling_vol_5d,Volatilidad,"Desviación típica muestral de los retornos diarios en 5 sesiones, anualizada por √252.",3517,5,True,True,True
+rolling_vol_10d,Volatilidad,"Desviación típica muestral de los retornos diarios en 10 sesiones, anualizada por √252.",3512,10,True,True,True
+rolling_vol_20d,Volatilidad,"Desviación típica muestral de los retornos diarios en 20 sesiones, anualizada por √252.",3502,20,True,True,True
+volatility_ratio_20_60,Volatilidad,Volatilidad realizada 20d dividida por la volatilidad 60d; expansión/contracción relativa.,3462,60,True,True,True
+sma_5d,Tendencia,Media móvil simple de 5 cierres.,3518,4,True,False,False
+dist_sma_5d,Tendencia,Close / SMA(5) - 1.,3518,4,True,True,True
+slope_sma_5d,Tendencia,"Cambio de SMA(5) en 5 sesiones, dividido por 5 y por el precio actual.",3513,9,True,True,False
+sma_10d,Tendencia,Media móvil simple de 10 cierres.,3513,9,True,False,False
+dist_sma_10d,Tendencia,Close / SMA(10) - 1.,3513,9,True,True,False
+slope_sma_10d,Tendencia,"Cambio de SMA(10) en 5 sesiones, dividido por 5 y por el precio actual.",3508,14,True,True,False
+sma_20d,Tendencia,Media móvil simple de 20 cierres.,3503,19,True,False,False
+dist_sma_20d,Tendencia,Close / SMA(20) - 1.,3503,19,True,True,True
+slope_sma_20d,Tendencia,"Cambio de SMA(20) en 5 sesiones, dividido por 5 y por el precio actual.",3498,24,True,True,True
+sma_50d,Tendencia,Media móvil simple de 50 cierres.,3473,49,True,False,False
+dist_sma_50d,Tendencia,Close / SMA(50) - 1.,3473,49,True,True,True
+slope_sma_50d,Tendencia,"Cambio de SMA(50) en 5 sesiones, dividido por 5 y por el precio actual.",3468,54,True,True,True
+sma_200d,Tendencia,Media móvil simple de 200 cierres.,3323,199,True,False,False
+dist_sma_200d,Tendencia,Close / SMA(200) - 1.,3323,199,True,True,True
+slope_sma_200d,Tendencia,"Cambio de SMA(200) en 5 sesiones, dividido por 5 y por el precio actual.",3318,204,True,True,True
+atr_14d,Volatilidad,"ATR 14 de Wilder sobre OHLC, en puntos de índice.",3509,13,True,False,False
+atr_pct_14d,Volatilidad,ATR 14 de Wilder dividido por el precio de cierre.,3509,13,True,True,True
+rsi_14,Momentum,"RSI de Wilder de 14 sesiones, escala 0–100.",3508,14,True,True,True
+roc_10d,Momentum,Rate of Change del cierre a 10 sesiones.,3512,10,True,True,True
+roc_20d,Momentum,Rate of Change del cierre a 20 sesiones.,3502,20,True,True,True
+macd,Momentum,"EMA(12) - EMA(26), en puntos de índice.",3497,25,True,False,False
+macd_signal,Momentum,"EMA(9) de MACD, en puntos de índice.",3489,33,True,False,False
+macd_hist,Momentum,"MACD menos su línea de señal, en puntos de índice.",3489,33,True,False,False
+macd_pct,Momentum,MACD dividido por el cierre.,3497,25,True,True,False
+macd_signal_pct,Momentum,Línea de señal MACD dividida por el cierre.,3489,33,True,True,False
+macd_hist_pct,Momentum,Histograma MACD dividido por el cierre.,3489,33,True,True,True
+zscore_close_20d,Momentum,(Close - SMA20) / desviación típica de Close de 20 sesiones.,3503,19,True,True,True
+day_of_week,Estacionalidad,Día de semana de la fecha de negociación; lunes=0.,3522,0,True,True,False
+day_of_month,Estacionalidad,"Día calendario del mes, 1–31.",3522,0,True,True,False
+week_of_year,Estacionalidad,"Semana ISO del año, 1–53.",3522,0,True,True,False
+month_of_year,Estacionalidad,"Mes calendario, 1–12.",3522,0,True,True,False
+dow_sin,Estacionalidad,Codificación seno cíclica del día de semana.,3522,0,True,True,False
+dow_cos,Estacionalidad,Codificación coseno cíclica del día de semana.,3522,0,True,True,False
+month_sin,Estacionalidad,Codificación seno cíclica del mes.,3522,0,True,True,False
+month_cos,Estacionalidad,Codificación coseno cíclica del mes.,3522,0,True,True,False
+day_of_month_sin,Estacionalidad,Codificación seno cíclica del día del mes.,3522,0,True,True,False
+day_of_month_cos,Estacionalidad,Codificación coseno cíclica del día del mes.,3522,0,True,True,False
+pre_holiday,Estacionalidad,Sesión previa a un cierre programado de NYSE; fallback transparente a gaps observados si el calendario no está instalado.,3522,0,True,True,False
+post_holiday,Estacionalidad,Sesión posterior a un cierre programado de NYSE; fallback transparente a gaps observados si el calendario no está instalado.,3522,0,True,True,False
+month_start_3,Estacionalidad,"Una de las tres primeras sesiones observadas del mes, identificable en tiempo real.",3522,0,True,True,False
+month_end_3,Estacionalidad,"Una de las tres últimas sesiones programadas del mes, según el calendario NYSE.",3522,0,True,True,False
+volume_ratio_20d,Volumen,Volumen actual dividido por la media móvil de 20 sesiones.,3503,19,True,True,True
+volume_spike,Volumen,Indicador: volumen actual > 2 × media móvil de volumen de 20 sesiones.,3503,19,True,True,False
+obv,Volumen,On-Balance Volume acumulado: volumen con signo del cambio de cierre.,3522,0,True,False,False
+obv_slope_20d,Volumen,Cambio de OBV en 20 sesiones dividido por volumen total de 20 sesiones.,3502,20,True,True,True

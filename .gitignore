@@ -15,3 +15,6 @@ datashader-work/pyviz-examples/*
 *datashader-examples*
 
 *.vscode*
+
+# Local virtual environment for quant research
+.venv/

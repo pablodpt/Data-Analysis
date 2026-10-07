@@ -1,0 +1,4 @@
+test,split_date,first_n,second_n,first_mean,second_mean,statistic,p_value,interpretation,p_value_holm
+Welch mean daily return: first vs second half,2012-02-24,1760,1761,0.00017752001660927225,0.0004414767316196812,-0.661638718118239,0.5082579050680262,Diagnóstico preespecificado; no estima una fecha causal de ruptura.,0.5082579050680262
+Welch absolute daily return: first vs second half,2012-02-24,1760,1761,0.009302070299523086,0.00576675942007431,11.706724303657303,6.741737419480138e-31,Diferencia de magnitud media; complementa los regímenes anuales.,2.0225212258440413e-30
+Levene variance: first vs second half,2012-02-24,1760,1761,0.0002131099715300082,6.704304060487949e-05,134.08119024418156,1.856883656075904e-30,Diagnóstico de varianzas preespecificado; no se busca una fecha de ruptura.,3.713767312151808e-30

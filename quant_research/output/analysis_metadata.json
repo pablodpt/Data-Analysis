@@ -1,0 +1,107 @@
+{
+  "generated_at": "2026-10-07T09:55:55+00:00",
+  "source": "/home/user/Data-Analysis/economics/^GSPC.csv",
+  "relation": "^GSPC.csv",
+  "start_date": "2005-02-28",
+  "end_date": "2019-02-25",
+  "rows": 3522,
+  "input_rows": 3522,
+  "duplicate_date_rows": 0,
+  "invalid_date_rows": 0,
+  "rows_removed_bad_close": 0,
+  "cutoff_date": "2014-12-10",
+  "discovery_fraction": 0.7,
+  "cost_bps": 5.0,
+  "folds": 5,
+  "min_cases": 100,
+  "selected_close": "Adj Close with Close fallback",
+  "ohlcv_columns_available": {
+    "open": true,
+    "high": true,
+    "low": true,
+    "close": true,
+    "adj_close": true,
+    "volume": true
+  },
+  "daily_return_outliers_1_5_iqr": 305,
+  "daily_return_min": -0.09034977815503076,
+  "daily_return_max": 0.11580036960722695,
+  "daily_return_q01": -0.03466144664866129,
+  "daily_return_q99": 0.03380603269389152,
+  "discovery": {
+    "conditions": 118,
+    "candidate_rules": 1223054,
+    "1": {
+      "train_rows": 2465,
+      "base_up_rate": 0.5521298174442191,
+      "base_down_rate": 0.44746450304259633,
+      "eligible_rule_count": 4198,
+      "eligible_directional_tests": 8396
+    },
+    "3": {
+      "train_rows": 2465,
+      "base_up_rate": 0.5728194726166329,
+      "base_down_rate": 0.42718052738336715,
+      "eligible_rule_count": 4198,
+      "eligible_directional_tests": 8396
+    },
+    "5": {
+      "train_rows": 2465,
+      "base_up_rate": 0.5703853955375253,
+      "base_down_rate": 0.4292089249492901,
+      "eligible_rule_count": 4198,
+      "eligible_directional_tests": 8396
+    },
+    "hypotheses_tested": 25188,
+    "discovery_start": "2005-02-28",
+    "discovery_end": "2014-12-10",
+    "holdout_start": "2014-12-11",
+    "holdout_end": "2019-02-25",
+    "min_cases": 100,
+    "max_conditions": 4,
+    "max_holdout_rules": 100,
+    "holdout_candidates_tested": 100,
+    "holdout_candidates_with_100_cases": 42,
+    "validated_patterns": 0,
+    "train_nominal_p_le_05_directional_tests": 1867,
+    "train_bh_q_le_05_directional_tests": 13
+  },
+  "column_mapping": {
+    "date": "Date",
+    "open": "Open",
+    "high": "High",
+    "low": "Low",
+    "close": "Close",
+    "adj_close": "Adj Close",
+    "volume": "Volume"
+  },
+  "model_names_available": [
+    "CatBoost",
+    "Gradient Boosting",
+    "LightGBM",
+    "Logistic Regression",
+    "Random Forest",
+    "Ridge Regression",
+    "XGBoost"
+  ],
+  "models_best_classifier_1d": "Logistic Regression",
+  "plot_files": [
+    "price_volatility_drawdown.png",
+    "daily_return_distribution.png",
+    "annual_regimes.png",
+    "oos_equity_curves.png",
+    "feature_importance.png"
+  ],
+  "shap_status": [
+    {
+      "model": "Logistic Regression",
+      "task": "classification_direction_1d",
+      "fold": 5,
+      "test_start": "2016-12-12",
+      "test_end": "2019-02-22",
+      "status": "permutation importance run on final chronological test fold",
+      "shap_status": "completed on up to 150 validation rows"
+    }
+  ],
+  "database_used": false
+}

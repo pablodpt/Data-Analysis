@@ -1,0 +1,15 @@
+model,task,available,status
+Logistic Regression,classification,True,available
+Logistic Regression,regression,False,not applicable: supports classification
+Ridge Regression,classification,False,not applicable: supports regression
+Ridge Regression,regression,True,available
+Random Forest,classification,True,available
+Random Forest,regression,True,available
+Gradient Boosting,classification,True,available
+Gradient Boosting,regression,True,available
+XGBoost,classification,True,available
+XGBoost,regression,True,available
+LightGBM,classification,True,available
+LightGBM,regression,True,available
+CatBoost,classification,True,available
+CatBoost,regression,True,available

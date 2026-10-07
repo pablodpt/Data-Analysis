@@ -1,0 +1,2 @@
+model,task,fold,test_start,test_end,status,shap_status
+Logistic Regression,classification_direction_1d,5,2016-12-12,2019-02-22,permutation importance run on final chronological test fold,completed on up to 150 validation rows

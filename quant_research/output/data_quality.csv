@@ -1,0 +1,13 @@
+column,dtype,rows,missing,missing_pct,unique_nonmissing,iqr_outliers_1_5
+Date,datetime64[us],3522,0.0,0.0,3522.0,0.0
+Open,float64,3522,0.0,0.0,3477.0,0.0
+High,float64,3522,0.0,0.0,3464.0,0.0
+Low,float64,3522,0.0,0.0,3478.0,0.0
+Close,float64,3522,0.0,0.0,3474.0,0.0
+Adj Close,float64,3522,0.0,0.0,3474.0,0.0
+Volume,int64,3522,0.0,0.0,3475.0,173.0
+cleanup_input_rows,diagnostic,3522,,,,
+cleanup_invalid_date_rows,diagnostic,0,,,,
+cleanup_invalid_or_nonpositive_close_rows,diagnostic,0,,,,
+cleanup_duplicate_date_rows,diagnostic,0,,,,
+cleanup_rows_removed_bad_close,diagnostic,0,,,,

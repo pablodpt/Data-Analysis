@@ -1,0 +1,119 @@
+condition_id,condition,underlying_feature,family,threshold_type,threshold
+0,3 sesiones alcistas consecutivas,streak_up_3,momentum,fijo,
+1,3 sesiones bajistas consecutivas,streak_down_3,momentum,fijo,
+2,Caída 3d ≤ -3%,return_3d_le_-0.03,momentum,fijo,-0.03
+3,RSI(14) > 70,rsi_14_above_70,momentum,fijo,70.0
+4,Nuevo máximo de cierre 20d,close_breakout_high_20,trend,fijo,
+5,Nuevo mínimo de cierre 20d,close_breakout_low_20,trend,fijo,
+6,Nuevo máximo de cierre 50d,close_breakout_high_50,trend,fijo,
+7,Nuevo mínimo de cierre 50d,close_breakout_low_50,trend,fijo,
+8,Precio sobre SMA(200),above_sma_200,trend,fijo,0.0
+9,Precio bajo SMA(200),below_sma_200,trend,fijo,0.0
+10,Lunes tras viernes bajista,monday_after_down_friday,seasonality,fijo,
+11,Primeras 3 sesiones del mes,month_start_3,seasonality,fijo,
+12,Últimas 3 sesiones del mes,month_end_3,seasonality,fijo,
+13,Día de semana = 0 (lunes=0),weekday_0,seasonality,fijo,0.0
+14,Día de semana = 1 (lunes=0),weekday_1,seasonality,fijo,1.0
+15,Día de semana = 2 (lunes=0),weekday_2,seasonality,fijo,2.0
+16,Día de semana = 3 (lunes=0),weekday_3,seasonality,fijo,3.0
+17,Día de semana = 4 (lunes=0),weekday_4,seasonality,fijo,4.0
+18,Mes calendario = 1,month_1,seasonality,fijo,1.0
+19,Mes calendario = 2,month_2,seasonality,fijo,2.0
+20,Mes calendario = 3,month_3,seasonality,fijo,3.0
+21,Mes calendario = 4,month_4,seasonality,fijo,4.0
+22,Mes calendario = 5,month_5,seasonality,fijo,5.0
+23,Mes calendario = 6,month_6,seasonality,fijo,6.0
+24,Mes calendario = 7,month_7,seasonality,fijo,7.0
+25,Mes calendario = 8,month_8,seasonality,fijo,8.0
+26,Mes calendario = 9,month_9,seasonality,fijo,9.0
+27,Mes calendario = 10,month_10,seasonality,fijo,10.0
+28,Mes calendario = 11,month_11,seasonality,fijo,11.0
+29,Mes calendario = 12,month_12,seasonality,fijo,12.0
+30,return_1d ≤ Q10 (-0.012477),return_1d,momentum,Q10,-0.012477101740938213
+31,return_1d ≤ Q25 (-0.0043634),return_1d,momentum,Q25,-0.004363446096140755
+32,return_1d ≥ Q75 (0.005695),return_1d,momentum,Q75,0.0056949893371859295
+33,return_1d ≥ Q90 (0.012071),return_1d,momentum,Q90,0.012070793076518576
+34,return_3d ≤ Q10 (-0.022087),return_3d,momentum,Q10,-0.0220865134809726
+35,return_3d ≤ Q25 (-0.0079209),return_3d,momentum,Q25,-0.0079208888081653
+36,return_3d ≥ Q75 (0.010995),return_3d,momentum,Q75,0.010995119362469163
+37,return_3d ≥ Q90 (0.020958),return_3d,momentum,Q90,0.020957576596292538
+38,return_5d ≤ Q10 (-0.027071),return_5d,momentum,Q10,-0.0270712477087821
+39,return_5d ≤ Q25 (-0.0096539),return_5d,momentum,Q25,-0.009653859857379654
+40,return_5d ≥ Q75 (0.014528),return_5d,momentum,Q75,0.014528172624753977
+41,return_5d ≥ Q90 (0.025994),return_5d,momentum,Q90,0.025993909804860535
+42,return_10d ≤ Q10 (-0.034163),return_10d,momentum,Q10,-0.03416272296873921
+43,return_10d ≤ Q25 (-0.011775),return_10d,momentum,Q25,-0.011774500728166326
+44,return_10d ≥ Q75 (0.020161),return_10d,momentum,Q75,0.020160815103763996
+45,return_10d ≥ Q90 (0.035133),return_10d,momentum,Q90,0.03513348895690593
+46,return_20d ≤ Q10 (-0.048004),return_20d,momentum,Q10,-0.04800383393882353
+47,return_20d ≤ Q25 (-0.01554),return_20d,momentum,Q25,-0.01553974324336671
+48,return_20d ≥ Q75 (0.031939),return_20d,momentum,Q75,0.03193861391901609
+49,return_20d ≥ Q90 (0.048702),return_20d,momentum,Q90,0.04870228118697865
+50,rolling_vol_5d ≤ Q10 (0.055138),rolling_vol_5d,volatility,Q10,0.055137699347441387
+51,rolling_vol_5d ≤ Q25 (0.079951),rolling_vol_5d,volatility,Q25,0.07995122951405367
+52,rolling_vol_5d ≥ Q75 (0.19395),rolling_vol_5d,volatility,Q75,0.19394802517603987
+53,rolling_vol_5d ≥ Q90 (0.29395),rolling_vol_5d,volatility,Q90,0.2939512089918239
+54,rolling_vol_10d ≤ Q10 (0.069695),rolling_vol_10d,volatility,Q10,0.06969509772325203
+55,rolling_vol_10d ≤ Q25 (0.089643),rolling_vol_10d,volatility,Q25,0.0896429707275294
+56,rolling_vol_10d ≥ Q75 (0.19178),rolling_vol_10d,volatility,Q75,0.19178172091999213
+57,rolling_vol_10d ≥ Q90 (0.29335),rolling_vol_10d,volatility,Q90,0.2933497556723344
+58,rolling_vol_20d ≤ Q10 (0.077315),rolling_vol_20d,volatility,Q10,0.077314648942135
+59,rolling_vol_20d ≤ Q25 (0.094274),rolling_vol_20d,volatility,Q25,0.09427438657350473
+60,rolling_vol_20d ≥ Q75 (0.19142),rolling_vol_20d,volatility,Q75,0.1914169469507602
+61,rolling_vol_20d ≥ Q90 (0.29405),rolling_vol_20d,volatility,Q90,0.2940537407390851
+62,volatility_ratio_20_60 ≤ Q10 (0.67591),volatility_ratio_20_60,volatility,Q10,0.675913598039894
+63,volatility_ratio_20_60 ≤ Q25 (0.79647),volatility_ratio_20_60,volatility,Q25,0.7964651523693126
+64,volatility_ratio_20_60 ≥ Q75 (1.1405),volatility_ratio_20_60,volatility,Q75,1.1404987177223536
+65,volatility_ratio_20_60 ≥ Q90 (1.2828),volatility_ratio_20_60,volatility,Q90,1.2828130756490923
+66,atr_pct_14d ≤ Q10 (0.007409),atr_pct_14d,volatility,Q10,0.007408993509490432
+67,atr_pct_14d ≤ Q25 (0.0084137),atr_pct_14d,volatility,Q25,0.008413703238353058
+68,atr_pct_14d ≥ Q75 (0.015552),atr_pct_14d,volatility,Q75,0.015551705150203429
+69,atr_pct_14d ≥ Q90 (0.023555),atr_pct_14d,volatility,Q90,0.023555495672334066
+70,dist_sma_5d ≤ Q10 (-0.014084),dist_sma_5d,trend,Q10,-0.014083863741780056
+71,dist_sma_5d ≤ Q25 (-0.0054038),dist_sma_5d,trend,Q25,-0.005403826249881893
+72,dist_sma_5d ≥ Q75 (0.0071175),dist_sma_5d,trend,Q75,0.007117543473642796
+73,dist_sma_5d ≥ Q90 (0.01307),dist_sma_5d,trend,Q90,0.013070113840155217
+74,dist_sma_20d ≤ Q10 (-0.028519),dist_sma_20d,trend,Q10,-0.028518972321447456
+75,dist_sma_20d ≤ Q25 (-0.0085428),dist_sma_20d,trend,Q25,-0.008542755276433
+76,dist_sma_20d ≥ Q75 (0.01778),dist_sma_20d,trend,Q75,0.017779835555346568
+77,dist_sma_20d ≥ Q90 (0.02647),dist_sma_20d,trend,Q90,0.026469623813100585
+78,dist_sma_50d ≤ Q10 (-0.0409),dist_sma_50d,trend,Q10,-0.040900121922441746
+79,dist_sma_50d ≤ Q25 (-0.010153),dist_sma_50d,trend,Q25,-0.010153147846855587
+80,dist_sma_50d ≥ Q75 (0.031878),dist_sma_50d,trend,Q75,0.031877605525847286
+81,dist_sma_50d ≥ Q90 (0.044597),dist_sma_50d,trend,Q90,0.04459730124686212
+82,dist_sma_200d ≤ Q10 (-0.089053),dist_sma_200d,trend,Q10,-0.0890532609661624
+83,dist_sma_200d ≤ Q25 (-0.0058778),dist_sma_200d,trend,Q25,-0.005877767318755028
+84,dist_sma_200d ≥ Q75 (0.079821),dist_sma_200d,trend,Q75,0.07982072795950423
+85,dist_sma_200d ≥ Q90 (0.10933),dist_sma_200d,trend,Q90,0.10932532236173476
+86,slope_sma_20d ≤ Q10 (-0.0024659),slope_sma_20d,trend,Q10,-0.0024658689784122566
+87,slope_sma_20d ≤ Q25 (-0.00076819),slope_sma_20d,trend,Q25,-0.0007681869492719515
+88,slope_sma_20d ≥ Q75 (0.0015461),slope_sma_20d,trend,Q75,0.0015461052900934216
+89,slope_sma_20d ≥ Q90 (0.0021988),slope_sma_20d,trend,Q90,0.0021987616281317324
+90,slope_sma_50d ≤ Q10 (-0.0015073),slope_sma_50d,trend,Q10,-0.0015072937551359415
+91,slope_sma_50d ≤ Q25 (-0.00034302),slope_sma_50d,trend,Q25,-0.0003430151221923441
+92,slope_sma_50d ≥ Q75 (0.0010652),slope_sma_50d,trend,Q75,0.001065161546149118
+93,slope_sma_50d ≥ Q90 (0.001492),slope_sma_50d,trend,Q90,0.0014919650217686496
+94,slope_sma_200d ≤ Q10 (-0.0010775),slope_sma_200d,trend,Q10,-0.0010775480127422354
+95,slope_sma_200d ≤ Q25 (6.0529e-05),slope_sma_200d,trend,Q25,6.052897553087766e-05
+96,slope_sma_200d ≥ Q75 (0.00069453),slope_sma_200d,trend,Q75,0.000694529278712805
+97,slope_sma_200d ≥ Q90 (0.00084943),slope_sma_200d,trend,Q90,0.0008494293121704127
+98,rsi_14 ≤ Q10 (38.736),rsi_14,momentum,Q10,38.73611587056465
+99,rsi_14 ≤ Q25 (46.123),rsi_14,momentum,Q25,46.1231584669125
+100,rsi_14 ≥ Q75 (62.693),rsi_14,momentum,Q75,62.69339380607349
+101,rsi_14 ≥ Q90 (67.981),rsi_14,momentum,Q90,67.98067322868715
+102,macd_hist_pct ≤ Q10 (-0.0040078),macd_hist_pct,momentum,Q10,-0.004007752272701649
+103,macd_hist_pct ≤ Q25 (-0.0017814),macd_hist_pct,momentum,Q25,-0.0017814261886256184
+104,macd_hist_pct ≥ Q75 (0.0019257),macd_hist_pct,momentum,Q75,0.0019257146825487352
+105,macd_hist_pct ≥ Q90 (0.0037858),macd_hist_pct,momentum,Q90,0.0037857862433404274
+106,zscore_close_20d ≤ Q10 (-1.6075),zscore_close_20d,momentum,Q10,-1.6075410315182768
+107,zscore_close_20d ≤ Q25 (-0.68851),zscore_close_20d,momentum,Q25,-0.6885094830061036
+108,zscore_close_20d ≥ Q75 (1.3434),zscore_close_20d,momentum,Q75,1.3433849764719685
+109,zscore_close_20d ≥ Q90 (1.7104),zscore_close_20d,momentum,Q90,1.710435836200916
+110,volume_ratio_20d ≤ Q10 (0.81997),volume_ratio_20d,volume,Q10,0.8199693609583099
+111,volume_ratio_20d ≤ Q25 (0.90353),volume_ratio_20d,volume,Q25,0.9035315963720628
+112,volume_ratio_20d ≥ Q75 (1.0947),volume_ratio_20d,volume,Q75,1.0946763360400287
+113,volume_ratio_20d ≥ Q90 (1.2124),volume_ratio_20d,volume,Q90,1.2123638766317977
+114,obv_slope_20d ≤ Q10 (-0.17379),obv_slope_20d,volume,Q10,-0.17379433912408027
+115,obv_slope_20d ≤ Q25 (-0.039396),obv_slope_20d,volume,Q25,-0.03939613483964269
+116,obv_slope_20d ≥ Q75 (0.23955),obv_slope_20d,volume,Q75,0.23955120695496898
+117,obv_slope_20d ≥ Q90 (0.37111),obv_slope_20d,volume,Q90,0.3711144224082839
