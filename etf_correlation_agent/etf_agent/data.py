@@ -17,46 +17,74 @@ DEFAULT_CACHE_DIR = Path("data") / "etf_cache"
 # ---------------------------------------------------------------------------
 # Utilidades de normalización
 # ---------------------------------------------------------------------------
+# Campos de precio que yfinance puede devolver (se buscan en minúsculas)
+PRICE_FIELDS = {
+    "open", "high", "low", "close", "adj close", "volume",
+    "capital gains", "dividends", "stock splits",
+}
+
+
+def _pick_price_field(fields_lower: List[str]) -> Optional[str]:
+    """Elige el campo de precio preferido: 'Adj Close' si existe, si no 'Close'."""
+    for candidate in ("adj close", "close"):
+        if candidate in fields_lower:
+            return candidate
+    return None
+
+
 def _normalize_columns(raw: pd.DataFrame, tickers: List[str]) -> pd.DataFrame:
-    """Convierte la salida de yfinance (varios formatos) en un DataFrame
-    índice=fecha, columnas=ticker, valores=precio ajustado de cierre."""
-    if raw is None or raw.empty:
+    """Convierte la salida de yfinance (cualquier versión/formato) en un DataFrame
+    con índice=fecha, columnas=ticker y valores=precio de cierre ajustado.
+
+    Formatos soportados:
+      * MultiIndex (Ticker, Price)   -> yfinance nuevo con group_by='ticker'
+      * MultiIndex (Price, Ticker)   -> yfinance con group_by='column'
+      * Columnas planas (un solo ticker)
+    """
+    if raw is None or getattr(raw, "empty", True):
         raise ValueError("La descarga no devolvió datos.")
 
-    # Formato "group_by=ticker" (multiindex: nivel 0 = campo, nivel 1 = ticker)
     if isinstance(raw.columns, pd.MultiIndex):
-        names = [str(c).lower() for c in raw.columns.get_level_values(0)]
-        field = None
-        for candidate in ("adj close", "close"):
-            if candidate in names:
-                field = candidate
-                break
+        lvl0 = {str(c).lower() for c in raw.columns.get_level_values(0).unique()}
+        lvl1 = {str(c).lower() for c in raw.columns.get_level_values(1).unique()}
+        tiene0, tiene1 = lvl0 & PRICE_FIELDS, lvl1 & PRICE_FIELDS
+        if tiene1 and not tiene0:
+            field_level, ticker_level = 1, 0      # (Ticker, Price)
+        elif tiene0 and not tiene1:
+            field_level, ticker_level = 0, 1      # (Price, Ticker)
+        else:
+            raise ValueError(f"Columnas inesperadas en la descarga: {raw.columns[:5]}")
+        fields = [str(c).lower() for c in raw.columns.get_level_values(field_level)]
+        field = _pick_price_field(fields)
         if field is None:
             raise ValueError(f"Columnas inesperadas en la descarga: {raw.columns[:5]}")
-        lvl0 = raw.columns.get_level_values(0)
-        sub = raw.loc[:, lvl0 == field]
-        sub.columns = [str(c).lower() for c in sub.columns.get_level_values(1)]
+        mask = [f == field for f in fields]
+        sub = raw.loc[:, mask]
+        sub.columns = [str(c) for c in sub.columns.get_level_values(ticker_level)]
         out = sub.copy()
     else:
         cols = {str(c).lower(): c for c in raw.columns}
-        if "adj close" in cols:
-            out = raw[[cols["adj close"]]].copy()
-            out.columns = [tickers[0]]
-        elif "close" in cols:
-            out = raw[[cols["close"]]].copy()
-            out.columns = [tickers[0]]
-        else:
+        field = _pick_price_field(list(cols))
+        if field is None:
             raise ValueError(f"Columnas inesperadas en la descarga: {list(raw.columns)[:5]}")
+        out = raw[[cols[field]]].copy()
+        out.columns = [str(tickers[0]).upper()]
 
     out.index = pd.to_datetime(out.index)
     out = out[~out.index.duplicated(keep="last")].sort_index()
     out = out.apply(pd.to_numeric, errors="coerce")
     out = out.dropna(how="all")
+    # nombres de columna en mayúsculas para uniformar
+    out.columns = [str(c).upper() for c in out.columns]
     return out
 
 
 def _download_yfinance(tickers: List[str], start=None, end=None, retries: int = 2) -> pd.DataFrame:
-    """Descarga con yfinance, con reintentos."""
+    """Descarga con yfinance.
+
+    1) Intenta la descarga conjunta (normalizando el formato que devuelva la versión).
+    2) Si falla, descarga ticker a ticker con ``.history()`` (muy robusto).
+    """
     import yfinance as yf
 
     last_err: Optional[Exception] = None
@@ -72,9 +100,33 @@ def _download_yfinance(tickers: List[str], start=None, end=None, retries: int = 
                 threads=True,
             )
             return _normalize_columns(raw, tickers)
-        except Exception as err:  # pragma: no cover - depende de red
+        except Exception as err:  # depende de red / versión de yfinance
             last_err = err
             time.sleep(1.5 * (attempt + 1))
+
+    # Fallback: un ticker cada vez con la API .history()
+    if retries >= 0:
+        print(f"[etf_agent] Reintentando ticker a ticker ({len(tickers)} ETFs)...")
+    frames: Dict[str, pd.Series] = {}
+    for t in tickers:
+        for attempt in range(retries + 1):
+            try:
+                if start is None:
+                    hist = yf.Ticker(t).history(period="max", end=end, auto_adjust=True)
+                else:
+                    hist = yf.Ticker(t).history(start=start, end=end, auto_adjust=True)
+                if hist is not None and not hist.empty and "Close" in hist.columns:
+                    frames[t] = pd.to_numeric(hist["Close"], errors="coerce").rename(t)
+                break
+            except Exception as err:
+                last_err = err
+                time.sleep(1.0 * (attempt + 1))
+    if frames:
+        out = pd.concat(frames.values(), axis=1)
+        out.index = pd.to_datetime(out.index)
+        out = out[~out.index.duplicated(keep="last")].sort_index().dropna(how="all")
+        out.columns = [str(c).upper() for c in out.columns]
+        return out
     raise RuntimeError(f"No se pudo descargar de Yahoo Finance: {last_err}")
 
 
@@ -85,18 +137,25 @@ def _download_stooq(tickers: List[str], start=None, end=None) -> pd.DataFrame:
     except Exception as err:  # pragma: no cover
         raise RuntimeError(f"pandas-datareader no disponible: {err}")
 
+    if start is None:
+        start = "1993-01-01"  # Stooq necesita fecha inicial
     frames = []
     for t in tickers:
-        try:
-            df = web.DataReader(t.lower() + ".us", "stooq", start=start, end=end)
-            frames.append(df[["Close"]].rename(columns={"Close": t}))
-        except Exception:
-            continue
+        for attempt in range(2):
+            try:
+                df = web.DataReader(t.lower() + ".us", "stooq", start=start, end=end)
+                if df is not None and not df.empty and "Close" in df.columns:
+                    frames.append(df[["Close"]].rename(columns={"Close": t}))
+                break
+            except Exception:
+                time.sleep(1.0)
     if not frames:
         raise RuntimeError("La descarga desde Stooq tampoco devolvió datos.")
     out = pd.concat(frames, axis=1)
     out.index = pd.to_datetime(out.index)
-    return out.sort_index().dropna(how="all")
+    out = out[~out.index.duplicated(keep="last")].sort_index().dropna(how="all")
+    out.columns = [str(c).upper() for c in out.columns]
+    return out
 
 
 # ---------------------------------------------------------------------------

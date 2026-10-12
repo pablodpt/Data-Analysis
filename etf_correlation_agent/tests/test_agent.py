@@ -84,6 +84,81 @@ def prices_rows(returns):
 
 
 # ---------------------------------------------------------------------------
+# Normalización de la salida de yfinance (formatos MultiIndex)
+# ---------------------------------------------------------------------------
+def _fake_multiindex_ticker_price():
+    """Formato yfinance moderno: level0=Ticker, level1=Price."""
+    idx = pd.date_range("2024-01-01", periods=3, freq="B")
+    cols = pd.MultiIndex.from_tuples(
+        [("LQD", "Open"), ("LQD", "High"), ("LQD", "Low"), ("LQD", "Close"), ("LQD", "Volume")],
+        names=["Ticker", "Price"],
+    )
+    return pd.DataFrame(np.arange(15, dtype=float).reshape(3, 5), index=idx, columns=cols)
+
+
+def _fake_multiindex_price_ticker():
+    """Formato yfinance clásico: level0=Price, level1=Ticker."""
+    idx = pd.date_range("2024-01-01", periods=3, freq="B")
+    cols = pd.MultiIndex.from_product(
+        [["Open", "High", "Low", "Adj Close", "Volume"], ["SPY", "TLT"]]
+    )
+    data = np.arange(30, dtype=float).reshape(3, 10)
+    return pd.DataFrame(data, index=idx, columns=cols)
+
+
+def test_normalize_multiindex_ticker_price():
+    from etf_agent.data import _normalize_columns
+
+    out = _normalize_columns(_fake_multiindex_ticker_price(), ["LQD"])
+    assert list(out.columns) == ["LQD"]
+    assert len(out) == 3
+    # columna 'Close' del MultiIndex (valores 3, 8, 13)
+    assert np.allclose(out["LQD"].values, [3.0, 8.0, 13.0])
+
+
+def test_normalize_multiindex_price_ticker():
+    from etf_agent.data import _normalize_columns
+
+    out = _normalize_columns(_fake_multiindex_price_ticker(), ["SPY", "TLT"])
+    assert sorted(out.columns) == ["SPY", "TLT"]
+    assert len(out) == 3
+
+
+def test_normalize_flat_single_ticker():
+    from etf_agent.data import _normalize_columns
+
+    idx = pd.date_range("2024-01-01", periods=2, freq="B")
+    flat = pd.DataFrame({"Adj Close": [10.0, 11.0], "Volume": [100, 200]}, index=idx)
+    out = _normalize_columns(flat, ["GLD"])
+    assert list(out.columns) == ["GLD"]
+    assert out["GLD"].tolist() == [10.0, 11.0]
+
+
+def test_normalize_columnas_invalidas():
+    from etf_agent.data import _normalize_columns
+
+    idx = pd.date_range("2024-01-01", periods=2, freq="B")
+    mal = pd.DataFrame({"Foo": [1.0, 2.0]}, index=idx)
+    with pytest.raises(ValueError):
+        _normalize_columns(mal, ["X"])
+    with pytest.raises(ValueError):
+        _normalize_columns(pd.DataFrame(), ["X"])
+
+
+def test_normalize_ticker_sin_datos():
+    """Un ticker puede faltar en la descarga conjunta; no debe romper."""
+    from etf_agent.data import _normalize_columns
+
+    idx = pd.date_range("2024-01-01", periods=2, freq="B")
+    cols = pd.MultiIndex.from_product([["SPY"], ["Open", "Close"]])
+    out = _normalize_columns(
+        pd.DataFrame(np.arange(4, dtype=float).reshape(2, 2), index=idx, columns=cols),
+        ["SPY", "TLT"],
+    )
+    assert list(out.columns) == ["SPY"]
+
+
+# ---------------------------------------------------------------------------
 # Correlaciones
 # ---------------------------------------------------------------------------
 def test_matrices_por_ventana(prices):
