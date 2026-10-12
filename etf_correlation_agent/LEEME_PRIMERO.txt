@@ -74,6 +74,21 @@ Opcion C - desde Python / Jupyter (ver notebooks\Guia_agente_correlaciones_ETFs.
               result = build_report(prices, windows=["max","ytd","3m","1m"])
 
 
+ANADIR OTROS ETFs
+-----------------
+En el DASHBOARD: barra lateral -> cuadro de texto bajo la lista de ETFs -> escribe el
+simbolo (VWO, AGG, VIXY, SMH...) -> boton "Anadir ETF".
+
+En EJECUTAR_ANALISIS.bat: editalo con el bloc de notas y pon
+    set TICKERS=SPY,TLT,GLD,UUP,VWO,AGG
+    set WINDOWS=max,ytd,3m,1m
+(si dejas TICKERS vacio se usan los 22 ETFs por defecto).
+
+Por linea de comandos:
+    python -m etf_agent analyze --tickers SPY,TLT,VWO --windows max,ytd,3m,1m
+
+Si un simbolo no existe en Yahoo, el agente avisa y lo excluye (no se rompe).
+
 SOLUCION DE PROBLEMAS
 ---------------------
 * "python no se reconoce como comando" -> reinstala Python marcando

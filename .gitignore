@@ -20,3 +20,6 @@ datashader-work/pyviz-examples/*
 etf_correlation_agent/reports/
 etf_correlation_agent/data/
 .venv/
+
+# --- carpeta local de descarga de los zips ---
+descargas/

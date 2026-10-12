@@ -108,6 +108,45 @@ print(result["html"])
 
 Ver `notebooks/Guia_agente_correlaciones_ETFs.ipynb` para un recorrido completo.
 
+## 3b. Añadir (o quitar) ETFs
+
+Hay 4 formas, de más fácil a más flexible:
+
+**A) En el dashboard** (lo más cómodo): en la barra lateral, debajo del selector de ETFs,
+hay un cuadro de texto: escribe el símbolo (por ejemplo `VWO`, `AGG`, `VIXY`, `SMH`) y pulsa
+**➕ Añadir ETF**. Se suma a la selección al instante. Para quitar uno, simplemente
+desmárcalo de la lista.
+
+**B) Editando el `.bat`**: abre `EJECUTAR_ANALISIS.bat` con el bloc de notas y cambia:
+
+```bat
+set TICKERS=SPY,TLT,GLD,UUP,VWO,AGG,SMH
+set WINDOWS=max,ytd,3m,1m
+```
+Si dejas `set TICKERS=` vacío, se usa el universo completo de 22 ETFs.
+
+**C) Por línea de comandos**:
+
+```bash
+python -m etf_agent analyze --tickers SPY,TLT,GLD,VWO --windows max,ytd,3m,1m
+```
+
+**D) Desde Python**: 
+
+```python
+from etf_agent import fetch_prices, build_report
+prices = fetch_prices(tickers=["SPY", "TLT", "VWO", "AGG"])
+build_report(prices, outdir="reports")
+```
+
+Notas:
+- Cualquier símbolo que Yahoo Finance entienda vale (acciones, bonos, cripto...).
+- Si un símbolo no existe o no tiene datos, el agente **avisa y lo excluye** en lugar de romperse.
+- Los ETFs nuevos no aparecen en la tabla de "clase de activo" (saldá como "—"); si quieres
+  que salga con descripción, añádelo a `TICKER_INFO` en `etf_agent/config.py`.
+- Para añadirlos **de forma permanente** al universo por defecto, edita `DEFAULT_TICKERS`
+  (y `TICKER_INFO`) en `etf_agent/config.py`.
+
 ## 4. Qué calcula exactamente
 
 ### Correlaciones (por ventana: `max`, `ytd`, `3m`, `1m`, ...)

@@ -71,11 +71,36 @@ with st.sidebar:
         index=0,
         help="El modo demo funciona sin internet y sirve para probar el agente.",
     )
-    default_sel = [t for t in DEFAULT_TICKERS]
+
+    # --- Añadir un ETF que no esté en la lista predefinida ---
+    def _anadir_etf():
+        """Callback: se ejecuta antes de instanciar los widgets en el rerun,
+        por eso sí podemos modificar session_state aquí."""
+        t = (st.session_state.get("nuevo_ticker") or "").strip().upper()
+        if not t:
+            return
+        extras = st.session_state.setdefault("etfs_extra", [])
+        if t not in extras:
+            extras.append(t)
+        seleccion = st.session_state.setdefault("sel_tickers", list(DEFAULT_TICKERS))
+        if t not in seleccion:
+            seleccion.append(t)
+        st.session_state["nuevo_ticker"] = ""  # limpia el cuadro de texto
+
+    st.markdown("**¿Falta algún ETF?** Escribe su símbolo y pulsa *Añadir*:")
+    st.text_input(
+        "Símbolo extra",
+        key="nuevo_ticker",
+        placeholder="VWO, AGG, VIXY, SMH...",
+        label_visibility="collapsed",
+    )
+    st.button("➕ Añadir ETF", on_click=_anadir_etf)
+
+    opciones = sorted(
+        set(DEFAULT_TICKERS) | set(TICKER_INFO) | set(st.session_state.get("etfs_extra", []))
+    )
     tickers = st.multiselect(
-        "ETFs",
-        options=sorted(set(DEFAULT_TICKERS) | set(TICKER_INFO)),
-        default=default_sel,
+        "ETFs", options=opciones, default=list(DEFAULT_TICKERS), key="sel_tickers"
     )
     if not tickers:
         st.warning("Selecciona al menos un ETF.")
