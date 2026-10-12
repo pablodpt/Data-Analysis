@@ -33,6 +33,28 @@ from .correlation import (
 
 
 # ---------------------------------------------------------------------------
+# Utilidad: periodo común (evita que un ETF de corta vida recorte el análisis)
+# ---------------------------------------------------------------------------
+def datos_comunes(returns: pd.DataFrame, nombre: str = "análisis") -> pd.DataFrame:
+    """Restringe el DataFrame a las filas donde **todos** los tickers cotizan.
+
+    Los ETFs con poco histórico (p. ej. DRAM) recortarían en silencio el periodo
+    de los análisis multivariante (PCA, betas, Granger, cointegración...).
+    Aquí se avisa cuando el recorte es relevante.
+    """
+    completo = returns.dropna()
+    if 0 < len(completo) < len(returns):
+        perdidas = len(returns) - len(completo)
+        pct = perdidas / len(returns) * 100
+        if pct > 1.0:
+            print(
+                f"[etf_agent] AVISO ({nombre}): se usan {len(completo)} de {len(returns)} "
+                f"sesiones ({pct:.0f}% descartadas) porque algún ETF aún no cotizaba."
+            )
+    return completo
+
+
+# ---------------------------------------------------------------------------
 # 1. Lead-lag: ¿quién va por delante de quién?
 # ---------------------------------------------------------------------------
 def cross_correlation(
@@ -123,7 +145,7 @@ def granger_table(
     from statsmodels.tsa.stattools import grangercausalitytests
 
     tickers = list(tickers or returns.columns)
-    data = returns.dropna()
+    data = datos_comunes(returns, "Granger")
     rows = []
     for cause in tickers:
         for effect in tickers:
@@ -197,7 +219,7 @@ def cointegration_table(
     from statsmodels.tsa.stattools import coint, adfuller
 
     tickers = list(tickers or prices.columns)
-    logp = np.log(prices[tickers].astype(float)).dropna()
+    logp = datos_comunes(np.log(prices[tickers].astype(float)), "cointegración")
     rows = []
     for i, a in enumerate(tickers):
         for b in tickers[i + 1:]:
@@ -260,7 +282,7 @@ def factor_betas(
     Devuelve alpha anualizado, beta por factor, R² y R² ajustado.
     """
     tickers = [t for t in (tickers or returns.columns) if t not in factors]
-    data = returns.dropna()
+    data = datos_comunes(returns, "betas factoriales")
     rows = []
     for t in tickers:
         y = data[t].values
@@ -310,7 +332,7 @@ def pca_factors(returns: pd.DataFrame, n_components: int = 3) -> Dict[str, objec
     from sklearn.decomposition import PCA
     from sklearn.preprocessing import StandardScaler
 
-    data = returns.dropna()
+    data = datos_comunes(returns, "PCA")
     n_components = int(min(n_components, data.shape[1], data.shape[0]))
     X = StandardScaler().fit_transform(data.values)
     model = PCA(n_components=n_components, random_state=0)
@@ -371,7 +393,7 @@ def mutual_information_matrix(
     from sklearn.metrics import mutual_info_score
 
     tickers = list(tickers or returns.columns)
-    data = returns[tickers].dropna()
+    data = datos_comunes(returns[tickers], "información mutua")
     disc = data.apply(lambda s: pd.qcut(s.rank(method="first"), bins, labels=False))
     mi = pd.DataFrame(0.0, index=tickers, columns=tickers)
     for i, a in enumerate(tickers):
@@ -401,7 +423,7 @@ def regime_correlation(
     Útil para detectar asimetrías (suben más las correlaciones en estrés).
     """
     tickers = [t for t in (tickers or returns.columns)]
-    data = returns.dropna()
+    data = datos_comunes(returns, "regímenes de estrés")
     if benchmark not in data.columns:
         raise ValueError(f"El benchmark {benchmark} no está en los datos.")
     thr_lo = data[benchmark].quantile(quantile)

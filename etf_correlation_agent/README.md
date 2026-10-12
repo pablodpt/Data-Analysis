@@ -41,9 +41,19 @@ pip install -r requirements.txt
 | Crédito | `LQD` (investment grade), `HYG` (high yield) |
 | Divisas / materias primas | `UUP` (dólar DXY), `GLD` (oro), `USO` (petróleo), `DBC` (cesta de commodities) |
 | Sectores (rotación) | `XLK` (tech), `XLF` (financiero), `XLE` (energía), `XLU` (utilities), `XLP` (consumo defensivo) |
-| Semiconductores | `SOXX`, `DRAM` (memoria) |
+| Semiconductores | `SOXX` |
 
-Opcionales documentados en `config.OPTIONAL_TICKERS`: `VWO`, `SHY`, `BIL`, `AGG`, `VIXY`.
+**21 ETFs por defecto.**
+
+### ¿Y DRAM (memoria)?
+
+`DRAM` **no está en el universo por defecto** a propósito: su histórico es muy corto y,
+al forzar un periodo común más pequeño, recortaba en silencio los análisis
+multivariante (PCA, betas, Granger, cointegración, información mutua), "ensuciando" el
+estudio. Si quieres incluirlo, añádelo tú (sección 3b): el agente te avisará de cuántas
+sesiones se descartan por ese motivo.
+
+Opcionales documentados en `config.OPTIONAL_TICKERS`: `DRAM`, `VWO`, `SHY`, `BIL`, `AGG`, `VIXY`.
 Puedes usar cualquier lista: `--tickers SPY,TLT,GLD,VWO`.
 
 ## 3. Uso rápido

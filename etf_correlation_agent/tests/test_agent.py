@@ -42,9 +42,16 @@ def returns(prices):
 # ---------------------------------------------------------------------------
 def test_universo_por_defecto_contiene_los_etfs_pedidos():
     for t in ["USO", "GLD", "SPY", "QQQ", "TLT", "IEF", "IWM", "LQD", "HYG", "SGOV",
-              "DRAM", "SOXX", "EFA", "EEM", "TIP", "UUP", "DBC", "XLK", "XLF", "XLE",
+              "SOXX", "EFA", "EEM", "TIP", "UUP", "DBC", "XLK", "XLF", "XLE",
               "XLU", "XLP"]:
         assert t in DEFAULT_TICKERS, f"Falta {t} en el universo por defecto"
+    assert "DRAM" not in DEFAULT_TICKERS, "DRAM no debe estar por defecto (historial corto)"
+    # pero sigue estando disponible y documentado
+    from etf_agent.config import OPTIONAL_TICKERS, TICKER_INFO
+
+    assert "DRAM" in OPTIONAL_TICKERS
+    assert "DRAM" in TICKER_INFO
+    assert "historial corto" in OPTIONAL_TICKERS["DRAM"]["clase"].lower()
 
 
 def test_resolve_windows():
@@ -66,6 +73,54 @@ def test_demo_prices_shape_y_valores(prices):
     assert prices.shape[1] == 8
     assert (prices > 0).all().all()
     assert prices.index.is_monotonic_increasing
+
+
+def test_datos_comunes_avisa_del_recorte(capsys):
+    """Un ETF que empieza tarde no debe recortar el análisis en silencio."""
+    from etf_agent.relationships import datos_comunes
+
+    idx = pd.bdate_range("2020-01-01", periods=100)
+    corto = pd.DataFrame(
+        {
+            "SPY": np.linspace(100, 110, 100),
+            "TLT": np.linspace(90, 95, 100),
+            # ETF que empieza a mitad de muestra (historial corto)
+            "NUEVO": np.concatenate([np.full(50, np.nan), np.linspace(10, 12, 50)]),
+        },
+        index=idx,
+    )
+    out = datos_comunes(corto, "test")
+    assert len(out) == 50                       # solo el periodo comun
+    assert out.notna().all().all()
+    salida = capsys.readouterr().out
+    assert "AVISO" in salida and "test" in salida
+
+
+def test_etf_corta_vida_no_rompe_los_analisis():
+    """PCA/betas/Granger/MI deben funcionar (y avisar) con un ETF reciente."""
+    from etf_agent.relationships import datos_comunes
+
+    idx = pd.bdate_range("2020-01-01", periods=300)
+    rng = np.random.default_rng(1)
+    rets = pd.DataFrame(
+        {
+            "SPY": rng.normal(0, 0.01, 300),
+            "TLT": rng.normal(0, 0.005, 300),
+            "NUEVO": np.concatenate([np.full(150, np.nan), rng.normal(0, 0.01, 150)]),
+        },
+        index=idx,
+    )
+    comun = datos_comunes(rets, "test silencioso")
+    assert len(comun) == 150
+    assert comun.notna().all().all()
+    # los analisis multivariante usan ese periodo comun
+    from etf_agent import relationships as rel
+
+    assert rel.pca_factors(comun, n_components=2)["n_components"] == 2
+    assert len(rel.factor_betas(comun, factors=["SPY"])) == 2
+    mi = rel.mutual_information_matrix(comun, bins=5)
+    assert mi.shape == (3, 3)
+    assert np.isfinite(mi.values).all()
 
 
 def test_demo_es_reproducible():

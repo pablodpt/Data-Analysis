@@ -38,13 +38,16 @@ DEFAULT_TICKERS = [
     "XLE",   # Energy
     "XLU",   # Utilities (defensivo)
     "XLP",   # Consumer Staples (defensivo)
-    # --- Semiconductores / memoria ---
+    # --- Semiconductores ---
     "SOXX",  # iShares Semiconductor — semiconductores
-    "DRAM",  # ETF de memoria / DRAM
 ]
 
-# Alternativas intercambiables (documentadas, no incluidas por defecto)
+# ETFs disponibles pero NO incluidos por defecto.
+# DRAM se excluye a propósito: su histórico es muy corto y recortaría
+# (silenciosamente) el periodo común de los análisis multivariante
+# (PCA, betas, Granger, cointegración, información mutua...).
 OPTIONAL_TICKERS = {
+    "DRAM": {"name": "ETF de memoria / DRAM", "clase": "Semiconductores (memoria) — historial corto"},
     "VWO": {"name": "Vanguard FTSE Emerging Markets", "clase": "Renta variable (emergentes)"},
     "SHY": {"name": "iShares 1-3 Year Treasury", "clase": "Renta fija (bonos cortos)"},
     "BIL": {"name": "SPDR Bloomberg 1-3 Month T-Bill", "clase": "Letras del Tesoro (cash-like)"},
@@ -74,7 +77,6 @@ TICKER_INFO: Dict[str, Dict[str, str]] = {
     "XLU":  {"name": "Utilities Select Sector SPDR",     "clase": "Sector: Utilities (defensivo)"},
     "XLP":  {"name": "Consumer Staples Select Sector",   "clase": "Sector: Consumo defensivo"},
     "SOXX": {"name": "iShares Semiconductor ETF",        "clase": "Semiconductores"},
-    "DRAM": {"name": "ETF de memoria / DRAM",            "clase": "Semiconductores (memoria)"},
     **OPTIONAL_TICKERS,
 }
 

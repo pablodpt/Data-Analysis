@@ -6,7 +6,7 @@ QUE ES
 ------
 Un agente que busca correlaciones y cualquier tipo de relacion entre los ETFs mas
 significativos (SPY, QQQ, IWM, EFA, EEM, TLT, IEF, TIP, SGOV, LQD, HYG, UUP, GLD,
-USO, DBC, XLK, XLF, XLE, XLU, XLP, SOXX, DRAM) en las ventanas:
+USO, DBC, XLK, XLF, XLE, XLU, XLP, SOXX) en las ventanas:
 
     * Historico completo (max)
     * YTD  (ano en curso)
@@ -88,6 +88,10 @@ Por linea de comandos:
     python -m etf_agent analyze --tickers SPY,TLT,VWO --windows max,ytd,3m,1m
 
 Si un simbolo no existe en Yahoo, el agente avisa y lo excluye (no se rompe).
+
+NOTA: DRAM (memoria) no se incluye por defecto porque su historial es muy corto y
+recortaria el estudio. Si lo anades, el agente te avisa de cuantas sesiones se
+descartan por ese motivo.
 
 SOLUCION DE PROBLEMAS
 ---------------------
