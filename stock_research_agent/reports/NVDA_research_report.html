@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NVDA — Stock Research Report</title>
+<style>
+:root{
+  --bg:#0b0f17; --bg2:#0f1522; --card:#121a2b; --card2:#16213a;
+  --line:#22304d; --txt:#e8eefb; --muted:#8fa3c8; --accent:#4da3ff;
+  --up:#2fd07c; --dn:#ff5d6c; --gold:#ffc857;
+  --s20:#ffd166; --s50:#4da3ff; --s200:#c084fc; --boll:#274066;
+  --sup:#2fd07c; --res:#ff5d6c;
+  --good:#2fd07c; --mid:#ffc857; --bad:#ff5d6c;
+}
+html[data-theme="light"]{
+  --bg:#f4f6fb; --bg2:#ffffff; --card:#ffffff; --card2:#eef2fa;
+  --line:#d7e0f0; --txt:#17233d; --muted:#5b6c8f; --accent:#1668d6;
+  --up:#0d9d5c; --dn:#d63347; --gold:#c78a00;
+  --s20:#d99a00; --s50:#1668d6; --s200:#7b3ff2; --boll:#dbe6f8;
+  --sup:#0d9d5c; --res:#d63347;
+  --good:#0d9d5c; --mid:#c78a00; --bad:#d63347;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.topnav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:10px 22px;background:var(--bg2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:.2px}
+.nav-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.nav-links a{color:var(--muted)}
+.nav-links a:hover{color:var(--txt);text-decoration:none}
+.theme-btn{background:var(--card);border:1px solid var(--line);color:var(--txt);
+  padding:5px 12px;border-radius:20px;cursor:pointer;font-size:13px}
+.hero{padding:26px 22px 10px;background:
+  radial-gradient(1000px 300px at 20% -50px, color-mix(in srgb, var(--accent) 14%, transparent), transparent)}
+.hero-top{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-end}
+h1{margin:6px 0 4px;font-size:28px}
+.big-ticker{font-size:30px;font-weight:800;letter-spacing:1px;margin-right:12px}
+.meta-line{color:var(--muted);margin:0;font-size:13.5px}
+.hero-price{text-align:right}
+.hero-last{font-size:30px;font-weight:800}
+.hero-chg{color:var(--muted);font-size:13.5px}
+.badge{display:inline-block;padding:6px 14px;border-radius:20px;font-weight:800;font-size:13px;letter-spacing:.5px}
+.v-buy{background:color-mix(in srgb,var(--up) 18%, transparent);color:var(--up);
+  border:1px solid color-mix(in srgb,var(--up) 45%, transparent)}
+.v-hold{background:color-mix(in srgb,var(--gold) 16%, transparent);color:var(--gold);
+  border:1px solid color-mix(in srgb,var(--gold) 45%, transparent)}
+.v-avoid{background:color-mix(in srgb,var(--dn) 16%, transparent);color:var(--dn);
+  border:1px solid color-mix(in srgb,var(--dn) 45%, transparent)}
+.banner{padding:10px 14px;border-radius:10px;margin:14px 0;font-size:13.5px}
+.banner.ok{background:color-mix(in srgb,var(--accent) 10%, transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 35%, transparent)}
+.banner.warn{background:color-mix(in srgb,var(--gold) 12%, transparent);
+  border:1px solid color-mix(in srgb,var(--gold) 45%, transparent)}
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi-strip.small .kpi{padding:9px 11px}
+.kpi-label{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.6px}
+.kpi-value{font-size:19px;font-weight:800;margin-top:3px}
+.kpi-sub{color:var(--muted);font-size:11.5px;margin-top:2px}
+.tone-up .kpi-value{color:var(--up)} .tone-dn .kpi-value{color:var(--dn)}
+main{padding:8px 22px 30px;max-width:1180px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:22px;margin:22px 0;scroll-margin-top:70px}
+.sec-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.sec-num{background:var(--card2);border:1px solid var(--line);color:var(--accent);
+  min-width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:17px}
+.sec-head h2{margin:0 0 2px;font-size:21px}
+.sec-sub{color:var(--muted);margin:0;font-size:13.5px}
+h3.sub{margin:18px 0 8px;font-size:15px}
+.prose{font-size:15px;line-height:1.65}
+.muted{color:var(--muted)} .small{font-size:12.5px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:860px){.two-col{grid-template-columns:1fr}}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl .rk{color:var(--muted);width:42%}
+.tbl .rv{font-weight:600}
+.tbl.peers th{padding:8px 10px;text-align:left;color:var(--muted);font-size:12px;
+  text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--line)}
+.tbl.peers td{padding:9px 10px}
+.tbl.levels{margin-top:14px;max-width:560px}
+.upside-box{margin-top:10px;padding:10px 14px;border-radius:10px;font-size:14.5px;
+  background:var(--card2);border:1px solid var(--line)}
+.upside-box.tone-up b{color:var(--up)} .upside-box.tone-dn b{color:var(--dn)}
+.segs{display:grid;gap:12px;margin-top:10px;max-width:720px}
+.seg-head{display:flex;justify-content:space-between;font-size:14px;font-weight:700}
+.seg-note{color:var(--muted);font-size:12.5px;margin-top:3px}
+.bar{height:9px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:4px}
+.bar.big{height:12px}
+.bar-fill{height:100%;border-radius:6px}
+.bar-fill.good{background:var(--good)} .bar-fill.mid{background:var(--mid)}
+.bar-fill.bad{background:var(--bad)} .bar-fill.seg-fill{background:var(--accent)}
+.moat-top{display:flex;gap:16px;align-items:center;margin:6px 0 14px;flex-wrap:wrap}
+.moat-badge{font-size:18px;font-weight:800;padding:8px 18px;border-radius:12px;
+  background:color-mix(in srgb,var(--gold) 15%, transparent);color:var(--gold);
+  border:1px solid color-mix(in srgb,var(--gold) 40%, transparent)}
+.moat-score{color:var(--muted)}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.pillar{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.pillar-head{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.pill-score{color:var(--accent)}
+.pillar-note{color:var(--muted);font-size:12.5px;margin-top:6px}
+.edge-box{margin-top:16px;padding:16px 18px;border-radius:14px;
+  background:color-mix(in srgb,var(--gold) 8%, var(--card2));
+  border:1px solid color-mix(in srgb,var(--gold) 40%, transparent)}
+.edge-title{font-weight:800;color:var(--gold);margin-bottom:6px}
+.sent-grid{display:grid;grid-template-columns:280px 1fr;gap:22px}
+@media(max-width:860px){.sent-grid{grid-template-columns:1fr}}
+.sent-score{font-size:30px;font-weight:800}
+.news-list{display:grid;gap:10px;align-content:start}
+.news{display:flex;gap:12px;background:var(--card2);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;border-left:4px solid var(--accent)}
+.news.pos{border-left-color:var(--up)} .news.neg{border-left-color:var(--dn)}
+.news-date{color:var(--muted);font-size:12px;min-width:86px;padding-top:2px}
+.news-src{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{background:var(--card2);border:1px solid var(--line);border-radius:20px;
+  padding:6px 13px;font-size:13px}
+.chart{width:100%;height:auto;display:block;margin-top:8px}
+.chart.mini{margin-top:6px}
+.grid{stroke:var(--line);stroke-width:1;opacity:.5}
+.price{fill:none;stroke:var(--accent);stroke-width:2.4}
+.sma20{fill:none;stroke:var(--s20);stroke-width:1.4;opacity:.95}
+.sma50{fill:none;stroke:var(--s50);stroke-width:1.4;opacity:.95}
+.sma200{fill:none;stroke:var(--s200);stroke-width:1.4;opacity:.95}
+.boll-fill{fill:var(--boll);opacity:.35}
+.boll-up,.boll-lo{fill:none;stroke:var(--boll);stroke-width:1;opacity:.9}
+.hi,.lo{stroke:var(--muted);stroke-width:1;stroke-dasharray:5 4;opacity:.8}
+.res{stroke:var(--res);stroke-width:1.2;stroke-dasharray:6 4;opacity:.85}
+.sup{stroke:var(--sup);stroke-width:1.2;stroke-dasharray:6 4;opacity:.85}
+.tag-hi,.tag-lo{fill:var(--muted);font-size:10.5px}
+.tag-res{fill:var(--res);font-size:10.5px;font-weight:700}
+.tag-sup{fill:var(--sup);font-size:10.5px;font-weight:700}
+.tag-title{fill:var(--txt);font-size:12px;font-weight:700}
+.axis{fill:var(--muted);font-size:10.5px}
+.ref{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4;opacity:.7}
+.line-accent{fill:none;stroke:var(--s200);stroke-width:1.8}
+.dot{fill:var(--accent)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+.sw{display:inline-block;width:16px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.sw-price{background:var(--accent)} .sw-20{background:var(--s20)}
+.sw-50{background:var(--s50)} .sw-200{background:var(--s200)}
+.sw-boll{background:var(--boll)} .sw-sup{background:var(--sup)} .sw-res{background:var(--res)}
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.swot-grid{grid-template-columns:1fr}}
+.swot{border-radius:14px;padding:16px 18px;border:1px solid var(--line)}
+.swot h4{margin:0 0 8px;font-size:15px}
+.swot ul{margin:0;padding-left:18px}
+.swot li{margin:6px 0;font-size:13.5px}
+.swot.s{background:color-mix(in srgb,var(--up) 8%, var(--card2));
+  border-color:color-mix(in srgb,var(--up) 40%, transparent)}
+.swot.w{background:color-mix(in srgb,var(--dn) 8%, var(--card2));
+  border-color:color-mix(in srgb,var(--dn) 40%, transparent)}
+.swot.o{background:color-mix(in srgb,var(--accent) 10%, var(--card2));
+  border-color:color-mix(in srgb,var(--accent) 40%, transparent)}
+.swot.t{background:color-mix(in srgb,var(--gold) 10%, var(--card2));
+  border-color:color-mix(in srgb,var(--gold) 40%, transparent)}
+.cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.case{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.case.bull{border-top:4px solid var(--up)} .case.base{border-top:4px solid var(--accent)}
+.case.bear{border-top:4px solid var(--dn)}
+.case-head{display:flex;justify-content:space-between;margin-bottom:8px}
+.case-label{font-weight:800}
+.case-prob{color:var(--muted);font-size:12.5px}
+.case p{margin:0 0 10px;font-size:13.5px;color:var(--txt)}
+.case-target{font-size:13.5px}
+.ev-line{margin-top:12px;color:var(--muted);font-size:14px}
+.verdict-banner{padding:20px 24px;border-radius:16px;margin-top:18px;font-size:16px}
+.verdict-banner p{margin:8px 0 0;font-size:15.5px;line-height:1.6}
+.vb-title{font-weight:800;font-size:18px}
+.final{margin-top:20px;padding:20px 24px;border-radius:16px;border:1px solid var(--line)}
+.final-label{font-weight:800;letter-spacing:.5px;font-size:14px;color:var(--muted)}
+.final-score{font-size:26px;font-weight:800;margin:6px 0 12px}
+.final.v-buy .final-score{color:var(--up)} .final.v-hold .final-score{color:var(--gold)}
+.final.v-avoid .final-score{color:var(--dn)}
+.final-zones{display:flex;gap:22px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.final-zones b{color:var(--txt)}
+.verdict-banner.v-buy{background:color-mix(in srgb,var(--up) 10%, var(--card));
+  border:1px solid color-mix(in srgb,var(--up) 45%, transparent)}
+.verdict-banner.v-hold{background:color-mix(in srgb,var(--gold) 10%, var(--card));
+  border:1px solid color-mix(in srgb,var(--gold) 45%, transparent)}
+.verdict-banner.v-avoid{background:color-mix(in srgb,var(--dn) 10%, var(--card));
+  border:1px solid color-mix(in srgb,var(--dn) 45%, transparent)}
+footer{color:var(--muted);font-size:12.5px;padding:10px 22px 40px;max-width:1180px;margin:0 auto}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">📈 Stock Research Agent</div>
+  <div class="nav-links">
+    <a href="#s1">1 Fundamentals</a><a href="#s2">2 Business</a><a href="#s3">3 Moat</a>
+    <a href="#s4">4 Competitors</a><a href="#s5">5 Sentiment</a><a href="#s6">6 Technicals</a>
+    <a href="#s7">7 SWOT</a><a href="#s8">8 Thesis &amp; Verdict</a>
+    <button id="themeBtn" class="theme-btn" type="button">☀ Light</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-top">
+    <div>
+      <div class="ticker-row"><span class="big-ticker">NVDA</span>
+        <span class="badge v-buy">STRONG BUY</span></div>
+      <h1>NVIDIA Corporation</h1>
+      <p class="meta-line">Semiconductors · GPU / AI Data Center · NASDAQ ·
+        US · Mkt cap $5.30T · October 2026 (local intelligence KB) + computed technicals</p>
+    </div>
+    <div class="hero-price">
+      <div class="hero-last">221.30 USD</div>
+      <div class="hero-chg">+4.4% 1M · +9.8% 3M</div>
+    </div>
+  </div>
+  <div class="banner ok">Data as of October 2026, compiled from public market sources into the local intelligence KB. Technical indicators are computed from the deterministic 12-month price path anchored to the 52-week range.</div>
+  <div class="kpi-strip"><div class="kpi "><div class="kpi-label">Last price</div><div class="kpi-value">221.30 USD</div><div class="kpi-sub">52w 164.27 – 243.37</div></div><div class="kpi tone-up"><div class="kpi-label">Fair value</div><div class="kpi-value">324.12 USD</div><div class="kpi-sub">DCF / multiple model</div></div><div class="kpi tone-up"><div class="kpi-label">Implied upside</div><div class="kpi-value">+46.5%</div><div class="kpi-sub">vs. fair value</div></div><div class="kpi "><div class="kpi-label">Composite score</div><div class="kpi-value">9.54/10</div><div class="kpi-sub">Val 10.0 · Qual 10.0 · Moat 9.5 · Sent 8.6 · Tech 9.0</div></div><div class="kpi "><div class="kpi-label">Moat</div><div class="kpi-value">Wide Moat</div><div class="kpi-sub">9.5/10 · 5-pillar model</div></div><div class="kpi "><div class="kpi-label">Sentiment</div><div class="kpi-value">8.6/10</div><div class="kpi-sub">Strong Buy</div></div></div>
+</header>
+
+<main>
+<section id="s0" class="verdict-banner v-buy">
+  <div class="vb-title">Is it worth it? — NVDA at 221.30 USD</div>
+  <p>YES — worth buying at current levels. Composite 9.5/10. Fair value 324.12 vs. price 221.30 (+46.5%). Build a position in the 210.20–214.82 zone with a stop at 193.54 and a 12-month target of 285.00.</p>
+</section>
+
+<section id="s1" class="card">
+<header class="sec-head"><div class="sec-num">1</div><div><h2>Fundamentals, Financial Health &amp; Intrinsic Valuation</h2><p class="sec-sub">Income statement, balance sheet, cash flow, growth, margins, ROIC/ROE, multiples and DCF fair value</p></div></header>
+  <div class="two-col">
+    <div>
+      <table class="tbl"><tr><td class="rk">Revenue (TTM)</td><td class="rv">$303B <span class='muted'>(+62.0% YoY)</span></td></tr><tr><td class="rk">Gross margin</td><td class="rv">74.7%</td></tr><tr><td class="rk">Operating margin</td><td class="rv">65.0%</td></tr><tr><td class="rk">Net margin</td><td class="rv">55.0%</td></tr><tr><td class="rk">EPS (TTM)</td><td class="rv">6.45 USD</td></tr><tr><td class="rk">P/E (TTM) / Fwd</td><td class="rv">34.3x / 24.8x</td></tr><tr><td class="rk">P/S · EV/EBITDA</td><td class="rv">17.5x · 29.0x</td></tr><tr><td class="rk">ROIC / ROE</td><td class="rv">48% / 74%</td></tr><tr><td class="rk">Free cash flow</td><td class="rv">$155B</td></tr><tr><td class="rk">Cash / Total debt</td><td class="rv">$60B / $8B</td></tr><tr><td class="rk">Dividend</td><td class="rv">0.02 USD/qtr (0.01% yield)</td></tr><tr><td class="rk">Quality score</td><td class="rv">10.0/10 (margins + growth + balance sheet)</td></tr></table>
+    </div>
+    <div>
+      <h3 class="sub">Intrinsic value — Multi-method fair value — 50% two-stage FCFE DCF (FCF/share 6.47, growth 35%→3.5%, discount 9.0%) + 50% growth-adjusted P/E. Net cash/share +2.17 shown for context (FCFE basis — not added back)</h3>
+      <table class="tbl"><tr><td class="rk">Year 1</td><td class="rv">FCF 8.73 · g 35.0% · PV 8.01</td></tr><tr><td class="rk">Year 2</td><td class="rv">FCF 11.30 · g 29.3% · PV 9.51</td></tr><tr><td class="rk">Year 3</td><td class="rv">FCF 14.08 · g 24.7% · PV 10.88</td></tr><tr><td class="rk">Year 4</td><td class="rv">FCF 17.02 · g 20.9% · PV 12.06</td></tr><tr><td class="rk">Year 5</td><td class="rv">FCF 20.04 · g 17.7% · PV 13.03</td></tr><tr><td class="rk">Terminal yr 10</td><td class="rv">PV of terminal value: 276.33</td></tr><tr><td class="rk">DCF intrinsic value</td><td class="rv">401.85 USD (50% weight)</td></tr><tr><td class="rk">Growth-adjusted P/E value</td><td class="rv">246.39 USD (target 38.2x × EPS) — 50% weight</td></tr><tr><td class="rk">Implied fair value</td><td class="rv"><b>324.12 USD</b></td></tr></table>
+      <div class="upside-box tone-up">Implied upside vs. price: <b>+46.5%</b></div>
+    </div>
+  </div>
+</section>
+
+<section id="s2" class="card">
+<header class="sec-head"><div class="sec-num">2</div><div><h2>Business Model &amp; Revenue Architecture</h2><p class="sec-sub">How the company makes money, revenue segments and the operating flywheel</p></div></header>
+  <p class="prose">NVIDIA is the default compute layer of the AI era. It sells the full stack: GPU silicon (Blackwell/Rubin), NVLink/NVSwitch networking, CUDA software and an ecosystem of ~6,000 accelerated frameworks. Hyperscalers, sovereign AI programs and enterprises buy racks — not chips — which makes NVIDIA a pick-and-shovel provider that captures ~50% of AI accelerator spend with 70%+ gross margins.</p>
+  <div class="segs"><div class="seg"><div class="seg-head"><span>Data Center</span><span>+88%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:88%"></div></div><div class="seg-note">Blackwell/Rubin GPUs, networking, sovereign AI</div></div><div class="seg"><div class="seg-head"><span>Gaming</span><span>+8%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:8%"></div></div><div class="seg-note">GeForce RTX, DGX consumer</div></div><div class="seg"><div class="seg-head"><span>Professional Visualization</span><span>+2%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:4%"></div></div><div class="seg-note">Omniverse, industrial design</div></div><div class="seg"><div class="seg-head"><span>Automotive &amp; Robotics</span><span>+2%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:4%"></div></div><div class="seg-note">DRIVE, Thor, robotics compute</div></div></div>
+  <p class="muted small">Employees: ~37,000 · Web: nvidia.com</p>
+</section>
+
+<section id="s3" class="card">
+<header class="sec-head"><div class="sec-num">3</div><div><h2>Economic Moat — 5-Pillar Scoring</h2><p class="sec-sub">Network effects · switching costs · intangibles · cost advantage · scale</p></div></header>
+  <div class="moat-top">
+    <div class="moat-badge">Wide Moat</div>
+    <div class="moat-score">Composite moat score: <b>9.5/10</b></div>
+  </div>
+  <div class="pillars"><div class="pillar"><div class="pillar-head"><span>Network Effects</span><span class="pill-score">9.0/10</span></div><div class="bar"><div class="bar-fill good" style="width:90%"></div></div><div class="pillar-note">CUDA is the industry&#x27;s de facto API; ~6M developers and every major AI lab is CUDA-native. Migrations (ROCm, Triton, JAX) remain 12-24 month projects.</div></div><div class="pillar"><div class="pillar-head"><span>Switching Costs</span><span class="pill-score">9.0/10</span></div><div class="bar"><div class="bar-fill good" style="width:90%"></div></div><div class="pillar-note">Full-rack systems + network fabric + software stack make re-qualification a multi-quarter, multi-million-dollar exercise for every new GPU generation.</div></div><div class="pillar"><div class="pillar-head"><span>Intangibles (brand / IP)</span><span class="pill-score">8.0/10</span></div><div class="bar"><div class="bar-fill good" style="width:80%"></div></div><div class="pillar-note">Dense patent portfolio in GPU architecture, interconnect and rendering; CUDA&#x27;s 18-year head start is a quasi-intangible standard.</div></div><div class="pillar"><div class="pillar-head"><span>Cost Advantage</span><span class="pill-score">9.0/10</span></div><div class="bar"><div class="bar-fill good" style="width:90%"></div></div><div class="pillar-note">Scale with TSMC 4nm/3nm + custom HBM3E/HBM4 allocations lets NVIDIA ship at lower $/perf than any rival.</div></div><div class="pillar"><div class="pillar-head"><span>Scale</span><span class="pill-score">10.0/10</span></div><div class="bar"><div class="bar-fill good" style="width:100%"></div></div><div class="pillar-note">$303B TTM revenue at 75% gross margin — no rival comes within 1/4 of that revenue base in AI compute.</div></div></div>
+</section>
+
+<section id="s4" class="card">
+<header class="sec-head"><div class="sec-num">4</div><div><h2>Competitors &amp; Main Difference Against Competitors</h2><p class="sec-sub">Head-to-head peer table, positioning and the core structural edge</p></div></header>
+  <table class="tbl peers"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th>
+    <th>Rev (TTM)</th><th>P/E</th><th>Positioning</th></tr></thead>
+  <tbody><tr><td><b>AMD</b></td><td>Advanced Micro Devices</td><td>$932B</td><td>$41B</td><td>55x</td><td>MI400/Helios ramping; OpenAI 6GW deal; still ~1yr behind on full-stack software</td></tr><tr><td><b>AVGO</b></td><td>Broadcom</td><td>$1.70T</td><td>$89B</td><td>38x</td><td>Custom ASICs (Google, Meta, OpenAI) compete for the same hyperscaler capex</td></tr><tr><td><b>TSM</b></td><td>TSMC</td><td>$2.20T</td><td>$140B</td><td>30x</td><td>Supplier, not rival — but NVDA&#x27;s #1 bottleneck (CoWoS) is TSM&#x27;s capacity</td></tr><tr><td><b>INTC</b></td><td>Intel</td><td>$140B</td><td>$55B</td><td>35x</td><td>Gaudi 3 + 18A; credible at mid-range AI inference, weak at data-center top-end</td></tr></tbody></table>
+  <div class="edge-box"><div class="edge-title">★ Core structural edge — the main difference</div>
+  <p>The core structural edge is the STACK: no rival can match CUDA (software) + NVLink 72-GPU superchip (interconnect) + TSMC lead-node allocation (silicon) simultaneously. Customers compete to ship fastest; the team that adopts Blackwell/Rubin first wins inference economics — and that team is almost always NVIDIA.</p></div>
+</section>
+
+<section id="s5" class="card">
+<header class="sec-head"><div class="sec-num">5</div><div><h2>Market Sentiment, Recent News &amp; Secular Trends</h2><p class="sec-sub">Sentiment score, analyst consensus, headline catalysts and the structural trends driving the stock</p></div></header>
+  <div class="sent-grid">
+    <div class="sent-meter">
+      <div class="sent-score">8.6/10</div>
+      <div class="bar big"><div class="bar-fill good" style="width:86%"></div></div>
+      <div class="muted">Strong Buy · short interest 1.2% of float</div>
+      <div class="muted">Analyst target 285.00 USD (range 220.00 USD–340.00 USD)</div>
+    </div>
+    <div class="news-list"><div class="news pos"><div class="news-date">2026-10-12</div><div class="news-body"><b>NVIDIA unveils Rubin Ultra roadmap; +50% H200-class supply for 2027 customers</b><span class="news-src">— Reuters</span></div></div><div class="news pos"><div class="news-date">2026-10-03</div><div class="news-body"><b>Blackwell Ultra live in 300+ data centers; sovereign AI order book passes $40B in Q3</b><span class="news-src">— Bloomberg</span></div></div><div class="news mixed"><div class="news-date">2026-09-18</div><div class="news-body"><b>US–China export talks keep H200 restricted; NVDA launches China-variant &#x27;B30 lite&#x27;</b><span class="news-src">— WSJ</span></div></div></div>
+  </div>
+  <h3 class="sub">Secular trends</h3>
+  <div class="chips"><span class="chip">Sovereign AI: 30+ countries running national GPU buildouts (Stargate-style deals)</span><span class="chip">Inference &gt; training: agentic workloads make tokens/sec the unit of demand — favoring NVLink scale-up</span><span class="chip">Physical AI: Jetson Thor + Isaac targeting humanoid robots and autonomous factories</span><span class="chip">Supply chain remains the swing factor: CoWoS-L and HBM4 allocation, not demand, set the ceiling</span></div>
+</section>
+
+<section id="s6" class="card">
+<header class="sec-head"><div class="sec-num">6</div><div><h2>Technical Analysis</h2><p class="sec-sub">12-month price action with SMA 20/50/200, Bollinger Bands, RSI, MACD, support/resistance and actionable zones</p></div></header>
+  <div class="kpi-strip small"><div class="kpi "><div class="kpi-label">1M / 3M change</div><div class="kpi-value">+4.4% / +9.8%</div><div class="kpi-sub">1Y +3.8%</div></div><div class="kpi "><div class="kpi-label">SMA 20 / 50</div><div class="kpi-value">217.76 / 206.80</div><div class="kpi-sub">SMA 200 212.01</div></div><div class="kpi "><div class="kpi-label">RSI (14)</div><div class="kpi-value">54</div><div class="kpi-sub">Neutral</div></div><div class="kpi "><div class="kpi-label">MACD</div><div class="kpi-value">+0.08</div><div class="kpi-sub">Bullish (MACD above signal)</div></div><div class="kpi "><div class="kpi-label">From 52w high</div><div class="kpi-value">-9.1%</div><div class="kpi-sub">from low +34.7%</div></div><div class="kpi "><div class="kpi-label">ATR (14)</div><div class="kpi-value">9.25 USD</div><div class="kpi-sub">volatility unit for zones</div></div></div>
+  <svg viewBox="0 0 920 340" class="chart" role="img" aria-label="12-month price chart">
+      <line x1="0" y1="330" x2="920" y2="330" class="grid"/><line x1="0" y1="250" x2="920" y2="250" class="grid"/><line x1="0" y1="170" x2="920" y2="170" class="grid"/><line x1="0" y1="90" x2="920" y2="90" class="grid"/><line x1="0" y1="10" x2="920" y2="10" class="grid"/><line x1="0" y1="10" x2="0" y2="330" class="grid"/><line x1="154" y1="10" x2="154" y2="330" class="grid"/><line x1="308" y1="10" x2="308" y2="330" class="grid"/><line x1="462" y1="10" x2="462" y2="330" class="grid"/><line x1="616" y1="10" x2="616" y2="330" class="grid"/><line x1="770" y1="10" x2="770" y2="330" class="grid"/><line x1="0" y1="47" x2="920" y2="47" class="hi"/><text x="6" y="43" class="tag-hi">52w High 243.37</text><line x1="0" y1="407" x2="920" y2="407" class="lo"/><text x="6" y="403" class="tag-lo">52w Low 164.27</text><line x1="0" y1="135" x2="920" y2="135" class="res"/><text x="6" y="146" class="tag-res">R1 224.10</text><line x1="0" y1="83" x2="920" y2="83" class="res"/><text x="6" y="94" class="tag-res">R2 235.53</text><line x1="0" y1="221" x2="920" y2="221" class="sup"/><text x="6" y="232" class="tag-sup">S1 205.06</text><line x1="0" y1="252" x2="920" y2="252" class="sup"/><text x="6" y="263" class="tag-sup">S2 198.39</text>
+      <polygon points="69.6,30.9 69.6,30.9 73.3,30.9 77.0,32.0 80.6,31.7 84.3,32.5 88.0,32.6 91.6,31.0 95.3,32.7 99.0,41.4 102.6,37.3 106.3,32.1 110.0,32.6 113.6,29.6 117.3,30.3 121.0,30.5 124.6,30.3 128.3,30.2 132.0,28.8 135.6,26.0 139.3,23.3 142.9,21.6 146.6,20.2 150.3,19.1 153.9,19.1 157.6,18.8 161.3,18.8 164.9,18.7 168.6,18.7 172.3,20.3 175.9,20.3 179.6,26.8 183.3,22.9 186.9,24.7 190.6,24.2 194.3,23.2 197.9,18.4 201.6,17.0 205.3,15.7 208.9,16.7 212.6,18.8 216.3,20.6 219.9,23.4 223.6,24.5 227.3,24.3 230.9,25.4 234.6,26.1 238.2,30.1 241.9,29.1 245.6,28.9 249.2,25.4 252.9,23.8 256.6,23.6 260.2,23.6 263.9,18.2 267.6,16.5 271.2,17.0 274.9,20.9 278.6,27.1 282.2,32.3 285.9,32.6 289.6,32.0 293.2,34.2 296.9,34.2 300.6,34.2 304.2,36.6 307.9,43.2 311.6,43.2 315.2,48.3 318.9,55.7 322.5,57.2 326.2,63.0 329.9,63.9 333.5,59.7 337.2,60.3 340.9,75.6 344.5,67.8 348.2,67.0 351.9,57.8 355.5,60.5 359.2,63.2 362.9,68.2 366.5,70.2 370.2,71.8 373.9,72.5 377.5,71.7 381.2,70.7 384.9,75.5 388.5,75.5 392.2,78.3 395.9,86.9 399.5,91.3 403.2,91.7 406.9,91.6 410.5,92.7 414.2,95.2 417.8,115.7 421.5,116.3 425.2,110.2 428.8,110.3 432.5,115.4 436.2,121.4 439.8,121.1 443.5,125.5 447.2,125.8 450.8,126.5 454.5,128.7 458.2,127.2 461.8,129.0 465.5,130.3 469.2,132.7 472.8,134.7 476.5,130.4 480.2,129.4 483.8,126.7 487.5,121.8 491.2,122.5 494.8,118.3 498.5,129.6 502.2,127.5 505.8,127.5 509.5,129.8 513.1,128.0 516.8,128.1 520.5,129.6 524.1,131.5 527.8,127.5 531.5,128.5 535.1,128.7 538.8,127.5 542.5,130.8 546.1,129.9 549.8,128.9 553.5,127.1 557.1,127.1 560.8,136.0 564.5,138.5 568.1,135.9 571.8,134.0 575.5,139.9 579.1,138.5 582.8,137.6 586.5,139.0 590.1,143.0 593.8,143.4 597.5,143.5 601.1,158.7 604.8,163.9 608.4,164.6 612.1,167.5 615.8,168.9 619.4,172.9 623.1,173.9 626.8,177.2 630.4,173.4 634.1,178.5 637.8,178.1 641.4,185.3 645.1,190.2 648.8,190.5 652.4,178.2 656.1,181.9 659.8,184.1 663.4,184.6 667.1,184.8 670.8,185.7 674.4,185.4 678.1,187.5 681.8,188.0 685.4,183.1 689.1,182.8 692.7,184.8 696.4,182.1 700.1,182.1 703.7,181.9 707.4,181.5 711.1,181.6 714.7,181.6 718.4,186.0 722.1,185.0 725.7,209.0 729.4,211.3 733.1,210.6 736.7,214.1 740.4,213.9 744.1,213.7 747.7,219.1 751.4,222.1 755.1,222.0 758.7,226.7 762.4,230.4 766.1,229.5 769.7,236.8 773.4,237.7 777.1,237.5 780.7,236.3 784.4,228.6 788.0,224.8 791.7,217.6 795.4,214.9 799.0,210.9 802.7,209.7 806.4,201.6 810.0,201.6 813.7,199.5 817.4,199.0 821.0,199.0 824.7,200.4 828.4,190.4 832.0,191.0 835.7,191.2 839.4,191.2 843.0,184.0 846.7,187.0 850.4,173.5 854.0,169.5 857.7,164.0 861.4,154.8 865.0,150.4 868.7,140.1 872.4,113.9 876.0,113.9 879.7,114.6 883.3,115.9 887.0,108.9 890.7,109.4 894.3,107.9 898.0,106.5 901.7,104.8 905.3,100.7 909.0,101.1 912.7,104.7 916.3,101.1 920.0,101.7 920.0,330 69.6,330" class="boll-fill"/>
+      <polyline points="69.6,30.9 73.3,30.9 77.0,32.0 80.6,31.7 84.3,32.5 88.0,32.6 91.6,31.0 95.3,32.7 99.0,41.4 102.6,37.3 106.3,32.1 110.0,32.6 113.6,29.6 117.3,30.3 121.0,30.5 124.6,30.3 128.3,30.2 132.0,28.8 135.6,26.0 139.3,23.3 142.9,21.6 146.6,20.2 150.3,19.1 153.9,19.1 157.6,18.8 161.3,18.8 164.9,18.7 168.6,18.7 172.3,20.3 175.9,20.3 179.6,26.8 183.3,22.9 186.9,24.7 190.6,24.2 194.3,23.2 197.9,18.4 201.6,17.0 205.3,15.7 208.9,16.7 212.6,18.8 216.3,20.6 219.9,23.4 223.6,24.5 227.3,24.3 230.9,25.4 234.6,26.1 238.2,30.1 241.9,29.1 245.6,28.9 249.2,25.4 252.9,23.8 256.6,23.6 260.2,23.6 263.9,18.2 267.6,16.5 271.2,17.0 274.9,20.9 278.6,27.1 282.2,32.3 285.9,32.6 289.6,32.0 293.2,34.2 296.9,34.2 300.6,34.2 304.2,36.6 307.9,43.2 311.6,43.2 315.2,48.3 318.9,55.7 322.5,57.2 326.2,63.0 329.9,63.9 333.5,59.7 337.2,60.3 340.9,75.6 344.5,67.8 348.2,67.0 351.9,57.8 355.5,60.5 359.2,63.2 362.9,68.2 366.5,70.2 370.2,71.8 373.9,72.5 377.5,71.7 381.2,70.7 384.9,75.5 388.5,75.5 392.2,78.3 395.9,86.9 399.5,91.3 403.2,91.7 406.9,91.6 410.5,92.7 414.2,95.2 417.8,115.7 421.5,116.3 425.2,110.2 428.8,110.3 432.5,115.4 436.2,121.4 439.8,121.1 443.5,125.5 447.2,125.8 450.8,126.5 454.5,128.7 458.2,127.2 461.8,129.0 465.5,130.3 469.2,132.7 472.8,134.7 476.5,130.4 480.2,129.4 483.8,126.7 487.5,121.8 491.2,122.5 494.8,118.3 498.5,129.6 502.2,127.5 505.8,127.5 509.5,129.8 513.1,128.0 516.8,128.1 520.5,129.6 524.1,131.5 527.8,127.5 531.5,128.5 535.1,128.7 538.8,127.5 542.5,130.8 546.1,129.9 549.8,128.9 553.5,127.1 557.1,127.1 560.8,136.0 564.5,138.5 568.1,135.9 571.8,134.0 575.5,139.9 579.1,138.5 582.8,137.6 586.5,139.0 590.1,143.0 593.8,143.4 597.5,143.5 601.1,158.7 604.8,163.9 608.4,164.6 612.1,167.5 615.8,168.9 619.4,172.9 623.1,173.9 626.8,177.2 630.4,173.4 634.1,178.5 637.8,178.1 641.4,185.3 645.1,190.2 648.8,190.5 652.4,178.2 656.1,181.9 659.8,184.1 663.4,184.6 667.1,184.8 670.8,185.7 674.4,185.4 678.1,187.5 681.8,188.0 685.4,183.1 689.1,182.8 692.7,184.8 696.4,182.1 700.1,182.1 703.7,181.9 707.4,181.5 711.1,181.6 714.7,181.6 718.4,186.0 722.1,185.0 725.7,209.0 729.4,211.3 733.1,210.6 736.7,214.1 740.4,213.9 744.1,213.7 747.7,219.1 751.4,222.1 755.1,222.0 758.7,226.7 762.4,230.4 766.1,229.5 769.7,236.8 773.4,237.7 777.1,237.5 780.7,236.3 784.4,228.6 788.0,224.8 791.7,217.6 795.4,214.9 799.0,210.9 802.7,209.7 806.4,201.6 810.0,201.6 813.7,199.5 817.4,199.0 821.0,199.0 824.7,200.4 828.4,190.4 832.0,191.0 835.7,191.2 839.4,191.2 843.0,184.0 846.7,187.0 850.4,173.5 854.0,169.5 857.7,164.0 861.4,154.8 865.0,150.4 868.7,140.1 872.4,113.9 876.0,113.9 879.7,114.6 883.3,115.9 887.0,108.9 890.7,109.4 894.3,107.9 898.0,106.5 901.7,104.8 905.3,100.7 909.0,101.1 912.7,104.7 916.3,101.1 920.0,101.7" class="boll-up"/>
+      <polyline points="69.6,206.2 73.3,196.8 77.0,182.6 80.6,173.3 84.3,164.0 88.0,150.6 91.6,141.5 95.3,134.1 99.0,113.1 102.6,112.0 106.3,122.9 110.0,118.6 113.6,115.8 117.3,112.4 121.0,112.5 124.6,111.4 128.3,112.7 132.0,112.4 135.6,112.6 139.3,111.4 142.9,110.3 146.6,107.3 150.3,106.8 153.9,106.9 157.6,105.4 161.3,105.4 164.9,105.4 168.6,105.7 172.3,105.8 175.9,105.8 179.6,96.7 183.3,104.4 186.9,107.1 190.6,109.3 194.3,108.8 197.9,119.2 201.6,116.8 205.3,117.0 208.9,116.8 212.6,119.9 216.3,122.7 219.9,122.9 223.6,127.8 227.3,131.5 230.9,131.6 234.6,131.3 238.2,133.8 241.9,133.6 245.6,133.6 249.2,149.5 252.9,147.3 256.6,145.0 260.2,147.0 263.9,159.7 267.6,160.4 271.2,158.9 274.9,161.7 278.6,161.6 282.2,161.2 285.9,161.7 289.6,161.4 293.2,162.6 296.9,163.3 300.6,164.0 304.2,168.2 307.9,172.1 311.6,172.1 315.2,173.4 318.9,172.2 322.5,163.3 326.2,162.3 329.9,169.4 333.5,181.3 337.2,179.9 340.9,174.1 344.5,177.2 348.2,182.4 351.9,204.2 355.5,208.9 359.2,209.0 362.9,207.6 366.5,213.1 370.2,213.3 373.9,221.2 377.5,228.8 381.2,228.2 384.9,229.1 388.5,237.4 392.2,243.4 395.9,246.7 399.5,245.5 403.2,245.9 406.9,245.2 410.5,246.2 414.2,246.3 417.8,235.4 421.5,235.6 425.2,230.0 428.8,230.6 432.5,230.9 436.2,228.5 439.8,227.8 443.5,226.6 447.2,224.0 450.8,220.5 454.5,219.4 458.2,219.6 461.8,216.2 465.5,213.4 469.2,206.1 472.8,208.4 476.5,218.0 480.2,222.0 483.8,229.7 487.5,231.3 491.2,231.6 494.8,243.4 498.5,242.5 502.2,242.5 505.8,245.3 509.5,250.2 513.1,259.7 516.8,259.7 520.5,261.1 524.1,263.0 527.8,265.1 531.5,276.5 535.1,276.7 538.8,284.8 542.5,284.2 546.1,284.2 549.8,282.4 553.5,281.8 557.1,281.7 560.8,277.9 564.5,283.4 568.1,279.2 571.8,278.0 575.5,278.3 579.1,277.5 582.8,275.4 586.5,270.2 590.1,271.9 593.8,272.9 597.5,273.6 601.1,268.3 604.8,257.6 608.4,259.6 612.1,254.6 615.8,257.9 619.4,258.7 623.1,262.8 626.8,267.1 630.4,276.1 634.1,278.2 637.8,279.2 641.4,280.9 645.1,278.5 648.8,282.9 652.4,291.0 656.1,290.2 659.8,291.2 663.4,291.3 667.1,297.1 670.8,301.9 674.4,301.9 678.1,302.0 681.8,307.1 685.4,320.2 689.1,320.2 692.7,321.1 696.4,321.0 700.1,320.9 703.7,318.5 707.4,322.0 711.1,322.4 714.7,323.4 718.4,323.3 722.1,321.9 725.7,310.8 729.4,316.3 733.1,316.4 736.7,316.6 740.4,317.6 744.1,316.6 747.7,316.1 751.4,318.1 755.1,318.2 758.7,309.1 762.4,308.1 766.1,308.2 769.7,304.2 773.4,306.6 777.1,306.7 780.7,304.9 784.4,308.3 788.0,308.3 791.7,311.4 795.4,312.5 799.0,311.5 802.7,305.0 806.4,308.9 810.0,308.5 813.7,304.3 817.4,302.7 821.0,300.1 824.7,293.8 828.4,293.3 832.0,287.6 835.7,286.8 839.4,286.4 843.0,287.0 846.7,276.9 850.4,281.1 854.0,278.2 857.7,279.3 861.4,280.7 865.0,281.1 868.7,283.2 872.4,294.7 876.0,294.0 879.7,295.0 883.3,286.5 887.0,285.2 890.7,279.4 894.3,272.2 898.0,265.1 901.7,264.9 905.3,259.7 909.0,247.2 912.7,234.7 916.3,233.0 920.0,225.1" class="boll-lo"/>
+      <polyline points="729.4,156.2 733.1,156.5 736.7,156.8 740.4,157.4 744.1,158.0 747.7,158.5 751.4,159.2 755.1,159.9 758.7,160.5 762.4,161.3 766.1,162.2 769.7,162.9 773.4,163.9 777.1,164.6 780.7,165.6 784.4,166.3 788.0,167.1 791.7,167.8 795.4,168.6 799.0,169.3 802.7,170.1 806.4,170.6 810.0,171.6 813.7,172.4 817.4,173.2 821.0,174.3 824.7,175.2 828.4,175.8 832.0,176.7 835.7,177.8 839.4,178.3 843.0,178.9 846.7,179.8 850.4,180.2 854.0,180.8 857.7,181.4 861.4,181.7 865.0,182.3 868.7,182.8 872.4,183.0 876.0,183.9 879.7,184.7 883.3,185.5 887.0,185.8 890.7,186.5 894.3,187.1 898.0,187.6 901.7,188.0 905.3,188.4 909.0,188.9 912.7,189.1 916.3,189.3 920.0,189.5" class="sma200"/>
+      <polyline points="179.6,86.1 183.3,84.6 186.9,82.5 190.6,80.9 194.3,78.7 197.9,77.7 201.6,75.7 205.3,73.9 208.9,71.6 212.6,71.6 216.3,72.0 219.9,71.3 223.6,71.5 227.3,71.7 230.9,71.8 234.6,71.1 238.2,71.7 241.9,71.6 245.6,71.4 249.2,73.1 252.9,72.9 256.6,72.8 260.2,73.7 263.9,75.5 267.6,74.8 271.2,76.2 274.9,77.8 278.6,78.3 282.2,79.4 285.9,80.6 289.6,79.7 293.2,80.5 296.9,82.0 300.6,82.8 304.2,84.2 307.9,85.8 311.6,86.2 315.2,87.7 318.9,89.3 322.5,90.3 326.2,91.6 329.9,94.0 333.5,96.7 337.2,98.3 340.9,99.9 344.5,100.4 348.2,102.8 351.9,105.8 355.5,108.1 359.2,109.9 362.9,110.2 366.5,111.7 370.2,112.6 373.9,114.8 377.5,117.9 381.2,118.1 384.9,120.3 388.5,123.7 392.2,126.9 395.9,129.2 399.5,130.3 403.2,132.3 406.9,133.6 410.5,134.9 414.2,136.8 417.8,139.2 421.5,140.4 425.2,141.3 428.8,143.8 432.5,144.1 436.2,145.9 439.8,147.7 443.5,148.9 447.2,149.2 450.8,151.9 454.5,152.5 458.2,153.2 461.8,155.0 465.5,156.9 469.2,158.2 472.8,160.3 476.5,162.6 480.2,164.4 483.8,166.6 487.5,166.5 491.2,166.9 494.8,169.7 498.5,171.4 502.2,172.2 505.8,174.6 509.5,176.8 513.1,178.6 516.8,178.3 520.5,179.3 524.1,180.8 527.8,182.1 531.5,184.3 535.1,183.7 538.8,185.5 542.5,186.7 546.1,187.9 549.8,188.2 553.5,189.1 557.1,189.6 560.8,189.2 564.5,191.6 568.1,191.8 571.8,191.3 575.5,191.5 579.1,191.1 582.8,192.1 586.5,192.9 590.1,193.9 593.8,194.8 597.5,196.0 601.1,197.2 604.8,198.2 608.4,200.5 612.1,201.7 615.8,202.8 619.4,204.3 623.1,205.8 626.8,207.5 630.4,209.5 634.1,211.1 637.8,213.4 641.4,215.7 645.1,216.0 648.8,217.4 652.4,217.2 656.1,217.9 659.8,218.3 663.4,218.8 667.1,219.9 670.8,222.8 674.4,223.9 678.1,223.7 681.8,225.1 685.4,228.4 689.1,228.9 692.7,229.5 696.4,228.8 700.1,230.6 703.7,231.5 707.4,232.9 711.1,235.7 714.7,235.7 718.4,236.8 722.1,236.4 725.7,238.1 729.4,240.6 733.1,241.4 736.7,243.2 740.4,244.5 744.1,246.1 747.7,246.5 751.4,248.8 755.1,250.7 758.7,251.9 762.4,253.3 766.1,254.4 769.7,255.2 773.4,256.5 777.1,257.1 780.7,257.7 784.4,257.6 788.0,258.0 791.7,257.7 795.4,257.4 799.0,257.2 802.7,257.2 806.4,256.2 810.0,256.4 813.7,255.3 817.4,255.1 821.0,254.9 824.7,254.4 828.4,253.7 832.0,253.0 835.7,255.1 839.4,255.5 843.0,254.3 846.7,254.0 850.4,251.6 854.0,249.8 857.7,248.8 861.4,247.2 865.0,245.0 868.7,241.5 872.4,238.4 876.0,237.6 879.7,237.5 883.3,236.2 887.0,234.0 890.7,232.2 894.3,230.1 898.0,227.7 901.7,225.8 905.3,223.7 909.0,220.8 912.7,217.9 916.3,215.7 920.0,213.3" class="sma50"/>
+      <polyline points="69.6,118.5 73.3,113.9 77.0,107.3 80.6,102.5 84.3,98.2 88.0,91.6 91.6,86.2 95.3,83.4 99.0,77.2 102.6,74.6 106.3,77.5 110.0,75.6 113.6,72.7 117.3,71.4 121.0,71.5 124.6,70.9 128.3,71.5 132.0,70.6 135.6,69.3 139.3,67.4 142.9,66.0 146.6,63.7 150.3,62.9 153.9,63.0 157.6,62.1 161.3,62.1 164.9,62.1 168.6,62.2 172.3,63.0 175.9,63.0 179.6,61.7 183.3,63.7 186.9,65.9 190.6,66.7 194.3,66.0 197.9,68.8 201.6,66.9 205.3,66.4 208.9,66.8 212.6,69.3 216.3,71.6 219.9,73.1 223.6,76.2 227.3,77.9 230.9,78.5 234.6,78.7 238.2,81.9 241.9,81.3 245.6,81.3 249.2,87.5 252.9,85.6 256.6,84.3 260.2,85.3 263.9,89.0 267.6,88.4 271.2,87.9 274.9,91.3 278.6,94.3 282.2,96.7 285.9,97.1 289.6,96.7 293.2,98.4 296.9,98.7 300.6,99.1 304.2,102.4 307.9,107.7 311.6,107.6 315.2,110.8 318.9,113.9 322.5,110.3 326.2,112.7 329.9,116.6 333.5,120.5 337.2,120.1 340.9,124.8 344.5,122.5 348.2,124.7 351.9,131.0 355.5,134.7 359.2,136.1 362.9,137.9 366.5,141.7 370.2,142.5 373.9,146.9 377.5,150.3 381.2,149.4 384.9,152.3 388.5,156.5 392.2,160.8 395.9,166.8 399.5,168.4 403.2,168.8 406.9,168.4 410.5,169.5 414.2,170.8 417.8,175.6 421.5,175.9 425.2,170.1 428.8,170.5 432.5,173.2 436.2,174.9 439.8,174.4 443.5,176.1 447.2,174.9 450.8,173.5 454.5,174.1 458.2,173.4 461.8,172.6 465.5,171.8 469.2,169.4 472.8,171.6 476.5,174.2 480.2,175.7 483.8,178.2 487.5,176.6 491.2,177.1 494.8,180.9 498.5,186.1 502.2,185.0 505.8,186.4 509.5,190.0 513.1,193.9 516.8,193.9 520.5,195.4 524.1,197.2 527.8,196.3 531.5,202.5 535.1,202.7 538.8,206.1 542.5,207.5 546.1,207.0 549.8,205.7 553.5,204.4 557.1,204.4 560.8,206.9 564.5,211.0 568.1,207.5 571.8,206.0 575.5,209.1 579.1,208.0 582.8,206.5 586.5,204.6 590.1,207.5 593.8,208.1 597.5,208.6 601.1,213.5 604.8,210.7 608.4,212.1 612.1,211.0 615.8,213.4 619.4,215.8 623.1,218.4 626.8,222.1 630.4,224.8 634.1,228.4 637.8,228.7 641.4,233.1 645.1,234.4 648.8,236.7 652.4,234.6 656.1,236.1 659.8,237.7 663.4,238.0 667.1,241.0 670.8,243.8 674.4,243.7 678.1,244.7 681.8,247.5 685.4,251.6 689.1,251.5 692.7,252.9 696.4,251.6 700.1,251.5 703.7,250.2 707.4,251.8 711.1,252.0 714.7,252.5 718.4,254.6 722.1,253.5 725.7,259.9 729.4,263.8 733.1,263.5 736.7,265.4 740.4,265.8 744.1,265.1 747.7,267.6 751.4,270.1 755.1,270.1 758.7,267.9 762.4,269.2 766.1,268.8 769.7,270.5 773.4,272.2 777.1,272.1 780.7,270.6 784.4,268.5 788.0,266.5 791.7,264.5 795.4,263.7 799.0,261.2 802.7,257.3 806.4,255.2 810.0,255.1 813.7,251.9 817.4,250.9 821.0,249.5 824.7,247.1 828.4,241.8 832.0,239.3 835.7,239.0 839.4,238.8 843.0,235.5 846.7,231.9 850.4,227.3 854.0,223.8 857.7,221.6 861.4,217.7 865.0,215.8 868.7,211.7 872.4,204.3 876.0,203.9 879.7,204.8 883.3,201.2 887.0,197.0 890.7,194.4 894.3,190.0 898.0,185.8 901.7,184.8 905.3,180.2 909.0,174.1 912.7,169.7 916.3,167.0 920.0,163.4" class="sma20"/>
+      <polyline points="0.0,184.3 3.7,199.4 7.3,170.1 11.0,163.1 14.7,177.0 18.3,152.7 22.0,134.2 25.7,168.2 29.3,96.2 33.0,76.7 36.7,109.9 40.3,102.5 44.0,101.9 47.6,66.0 51.3,84.6 55.0,78.4 58.6,73.9 62.3,69.6 66.0,83.4 69.6,78.4 73.3,91.2 77.0,67.9 80.6,73.6 84.3,78.7 88.0,44.6 91.6,45.0 95.3,77.4 99.0,44.6 102.6,44.7 106.3,133.8 110.0,71.9 113.6,44.6 117.3,74.6 121.0,69.1 124.6,71.9 128.3,90.1 132.0,56.3 135.6,44.6 139.3,44.6 142.9,50.2 146.6,46.3 150.3,52.1 153.9,75.0 157.6,60.0 161.3,44.6 164.9,44.6 168.6,79.7 172.3,62.0 175.9,44.6 179.6,107.8 183.3,110.3 186.9,89.8 190.6,91.1 194.3,55.2 197.9,127.2 201.6,52.7 205.3,44.6 208.9,52.7 212.6,96.3 216.3,96.3 219.9,76.1 223.6,112.8 227.3,109.4 230.9,72.2 234.6,48.1 238.2,109.9 241.9,67.4 245.6,60.8 249.2,168.8 252.9,69.5 256.6,85.0 260.2,110.0 263.9,164.6 267.6,44.6 271.2,116.7 274.9,121.0 278.6,104.8 282.2,100.6 285.9,104.1 289.6,87.5 293.2,110.1 296.9,119.5 300.6,116.3 304.2,138.3 307.9,153.7 311.6,108.9 315.2,131.9 318.9,122.7 322.5,95.1 326.2,117.8 329.9,164.1 333.5,186.8 337.2,157.1 340.9,139.7 344.5,69.9 348.2,164.8 351.9,231.2 355.5,175.1 359.2,131.9 362.9,123.0 366.5,185.6 370.2,137.0 373.9,202.9 377.5,206.2 381.2,136.5 384.9,166.1 388.5,215.6 392.2,210.1 395.9,214.2 399.5,150.1 403.2,172.4 406.9,178.3 410.5,178.3 414.2,166.1 417.8,165.9 421.5,172.1 425.2,113.8 428.8,183.2 432.5,185.9 436.2,157.8 439.8,176.0 443.5,170.1 447.2,179.6 450.8,177.4 454.5,148.4 458.2,153.0 461.8,199.0 465.5,195.3 469.2,166.0 472.8,192.5 476.5,225.8 480.2,208.5 483.8,227.4 487.5,134.2 491.2,175.7 494.8,247.7 498.5,218.5 502.2,161.0 505.8,214.3 509.5,229.4 513.1,253.6 516.8,170.7 520.5,209.1 524.1,215.0 527.8,130.5 531.5,276.1 535.1,202.9 538.8,264.4 542.5,193.0 546.1,183.5 549.8,197.9 553.5,184.2 557.1,226.7 560.8,185.1 564.5,255.8 568.1,179.2 571.8,188.0 575.5,222.1 579.1,193.2 582.8,199.0 586.5,215.7 590.1,228.4 593.8,221.9 597.5,223.9 601.1,229.4 604.8,220.4 608.4,230.2 612.1,243.4 615.8,240.0 619.4,231.6 623.1,249.4 626.8,259.2 630.4,279.0 634.1,257.6 637.8,261.5 641.4,267.5 645.1,213.7 648.8,268.7 652.4,151.7 656.1,227.6 659.8,248.0 663.4,234.3 667.1,282.0 670.8,280.7 674.4,226.7 678.1,241.7 681.8,285.9 685.4,325.9 689.1,237.3 692.7,260.2 696.4,222.2 700.1,258.2 703.7,253.4 707.4,288.1 711.1,266.8 714.7,276.9 718.4,256.7 722.1,245.1 725.7,279.7 729.4,306.3 733.1,241.9 736.7,271.7 740.4,289.8 744.1,268.3 747.7,275.8 751.4,291.9 755.1,286.8 758.7,281.4 762.4,263.8 766.1,252.1 769.7,255.4 773.4,291.6 777.1,251.7 780.7,258.2 784.4,224.1 788.0,238.1 791.7,216.9 795.4,228.4 799.0,229.9 802.7,229.1 806.4,199.5 810.0,268.6 813.7,226.3 817.4,247.6 821.0,249.3 824.7,243.8 828.4,180.3 832.0,230.9 835.7,258.4 839.4,247.6 843.0,189.4 846.7,220.1 850.4,160.0 854.0,188.7 857.7,180.0 861.4,160.2 865.0,177.4 868.7,146.9 872.4,82.5 876.0,221.2 879.7,217.0 883.3,196.7 887.0,142.9 890.7,194.4 894.3,162.6 898.0,159.5 901.7,160.5 905.3,139.0 909.0,136.0 912.7,159.0 916.3,135.9 920.0,147.3" class="price"/>
+      <circle cx="918" cy="147" r="3.5" class="dot"/>
+      <text x="916" y="326" class="axis" text-anchor="end">181.14</text><text x="916" y="246" class="axis" text-anchor="end">198.72</text><text x="916" y="166" class="axis" text-anchor="end">216.30</text><text x="916" y="86" class="axis" text-anchor="end">233.89</text><text x="916" y="6" class="axis" text-anchor="end">251.47</text>
+    </svg>
+    <div class="legend">
+      <span><i class="sw sw-price"></i>Price</span>
+      <span><i class="sw sw-20"></i>SMA 20</span>
+      <span><i class="sw sw-50"></i>SMA 50</span>
+      <span><i class="sw sw-200"></i>SMA 200</span>
+      <span><i class="sw sw-boll"></i>Bollinger 20/2</span>
+      <span><i class="sw sw-sup"></i>Support</span>
+      <span><i class="sw sw-res"></i>Resistance</span>
+    </div>
+  <svg viewBox="0 0 920 96" class="chart mini" role="img" aria-label="RSI 14 — 54 (Neutral)">
+      <line x1="0" y1="27" x2="920" y2="27" class="ref"/>
+      <polyline points="51.3,8.2 55.0,7.3 58.6,6.7 62.3,6.0 66.0,10.3 69.6,9.4 73.3,13.5 77.0,9.0 80.6,10.9 84.3,12.7 88.0,6.1 91.6,6.2 95.3,17.2 99.0,10.6 102.6,10.6 106.3,33.0 110.0,21.1 113.6,16.7 117.3,22.8 121.0,21.9 124.6,22.5 128.3,26.4 132.0,19.9 135.6,17.9 139.3,17.9 142.9,19.3 146.6,18.5 150.3,20.2 153.9,26.5 157.6,22.8 161.3,19.2 164.9,19.2 168.6,29.1 172.3,24.5 175.9,20.3 179.6,35.3 183.3,35.8 186.9,30.5 190.6,30.8 194.3,22.2 197.9,37.1 201.6,22.8 205.3,21.5 208.9,23.1 212.6,31.2 216.3,31.1 219.9,27.1 223.6,33.8 227.3,33.1 230.9,25.5 234.6,21.1 238.2,32.5 241.9,25.1 245.6,24.0 249.2,39.8 252.9,25.4 256.6,27.4 260.2,30.6 263.9,37.0 267.6,22.2 271.2,30.1 274.9,30.6 278.6,28.6 282.2,28.1 285.9,28.6 289.6,26.3 293.2,29.4 296.9,30.7 300.6,30.2 304.2,33.5 307.9,35.8 311.6,27.8 315.2,31.4 318.9,29.8 322.5,25.0 326.2,29.0 329.9,36.2 333.5,39.3 337.2,33.6 340.9,30.4 344.5,19.5 348.2,33.3 351.9,40.5 355.5,32.6 359.2,27.2 362.9,26.1 366.5,33.5 370.2,27.4 373.9,34.5 377.5,34.9 381.2,26.3 384.9,29.6 388.5,34.9 392.2,34.2 395.9,34.6 399.5,26.1 403.2,28.9 406.9,29.6 410.5,29.6 414.2,27.8 417.8,27.7 421.5,28.8 425.2,19.5 428.8,30.5 432.5,30.9 436.2,26.4 439.8,29.2 443.5,28.2 447.2,29.8 450.8,29.4 454.5,23.9 458.2,24.9 461.8,33.5 465.5,32.7 469.2,26.7 472.8,31.7 476.5,37.3 480.2,33.6 483.8,36.8 487.5,20.0 491.2,27.0 494.8,36.9 498.5,32.3 502.2,24.1 505.8,31.2 509.5,33.0 513.1,36.0 516.8,24.5 520.5,29.4 524.1,30.1 527.8,19.8 531.5,35.6 535.1,27.9 538.8,33.4 542.5,26.5 546.1,25.6 549.8,27.1 553.5,25.6 557.1,30.2 560.8,25.6 564.5,32.9 568.1,24.9 571.8,25.8 575.5,29.4 579.1,26.3 582.8,26.9 586.5,28.9 590.1,30.4 593.8,29.5 597.5,29.8 601.1,30.6 604.8,29.1 608.4,30.7 612.1,32.8 615.8,32.1 619.4,30.4 623.1,33.7 626.8,35.5 630.4,39.0 634.1,33.8 637.8,34.5 641.4,35.7 645.1,23.3 648.8,34.0 652.4,15.3 656.1,27.1 659.8,29.9 663.4,27.9 667.1,34.3 670.8,34.1 674.4,25.8 678.1,28.0 681.8,34.1 685.4,39.0 689.1,26.1 692.7,29.0 696.4,24.1 700.1,28.9 703.7,28.2 707.4,32.8 711.1,29.6 714.7,31.0 718.4,27.8 722.1,26.0 725.7,31.4 729.4,35.2 733.1,24.9 736.7,29.3 740.4,31.9 744.1,28.4 747.7,29.6 751.4,32.1 755.1,31.2 758.7,30.1 762.4,26.7 766.1,24.4 769.7,25.1 773.4,32.5 777.1,24.4 780.7,25.7 784.4,19.4 788.0,22.5 791.7,18.6 795.4,21.3 799.0,21.6 802.7,21.5 806.4,15.4 810.0,31.2 813.7,23.0 817.4,27.2 821.0,27.5 824.7,26.4 828.4,14.9 832.0,25.2 835.7,30.0 839.4,28.0 843.0,18.5 846.7,24.1 850.4,15.6 854.0,20.7 857.7,19.5 861.4,16.7 865.0,20.0 868.7,15.6 872.4,7.7 876.0,29.3 879.7,28.7 883.3,26.0 887.0,19.4 890.7,26.4 894.3,22.6 898.0,22.2 901.7,22.3 905.3,19.5 909.0,19.1 912.7,23.2 916.3,19.7 920.0,21.8" class="line-accent"/>
+      <text x="6" y="14" class="tag-title">RSI 14 — 54 (Neutral)  <tspan class="axis">(0 … 67)</tspan></text>
+    </svg>
+  <svg viewBox="0 0 920 96" class="chart mini" role="img" aria-label="MACD histogram — +0.08">
+      <line x1="0" y1="56" x2="920" y2="56" class="ref"/>
+      <polyline points="3.7,60.2 7.3,54.1 11.0,48.2 14.7,49.0 18.3,42.7 22.0,34.0 25.7,39.9 29.3,23.0 33.0,8.6 36.7,12.2 40.3,15.0 44.0,19.2 47.6,13.7 51.3,18.6 55.0,22.6 58.6,26.3 62.3,29.9 66.0,38.5 69.6,44.4 73.3,53.5 77.0,53.5 80.6,56.3 84.3,60.7 88.0,54.0 91.6,51.0 95.3,60.2 99.0,56.9 102.6,55.9 106.3,82.9 110.0,80.9 113.6,71.1 117.3,74.0 121.0,74.1 124.6,74.8 128.3,80.4 132.0,73.3 135.6,65.1 139.3,60.1 142.9,59.0 146.6,57.7 150.3,59.1 153.9,67.2 157.6,67.8 161.3,63.6 164.9,61.0 168.6,70.2 172.3,70.4 175.9,65.0 179.6,80.5 183.3,90.0 186.9,88.4 190.6,86.2 194.3,72.8 197.9,85.1 201.6,69.1 205.3,55.9 208.9,50.1 212.6,59.9 216.3,65.8 219.9,62.9 223.6,71.8 227.3,75.4 230.9,65.4 234.6,51.4 238.2,61.1 241.9,54.2 245.6,47.8 249.2,76.4 252.9,63.5 256.6,59.4 260.2,64.0 263.9,82.6 267.6,56.7 271.2,61.8 274.9,65.6 278.6,62.4 282.2,58.5 285.9,56.7 289.6,50.2 293.2,52.9 296.9,57.2 300.6,58.6 304.2,65.7 307.9,73.8 311.6,64.2 315.2,64.3 318.9,60.7 322.5,49.6 326.2,49.3 329.9,62.9 333.5,77.5 337.2,76.1 340.9,68.5 344.5,41.7 348.2,53.5 351.9,80.4 355.5,78.6 359.2,62.8 362.9,49.3 366.5,59.3 370.2,50.2 373.9,63.9 377.5,72.5 381.2,55.5 384.9,53.0 388.5,65.8 392.2,71.0 395.9,74.0 399.5,55.0 403.2,49.0 406.9,46.7 410.5,45.0 414.2,40.2 417.8,37.3 421.5,37.7 425.2,20.9 428.8,32.4 432.5,41.3 436.2,38.8 439.8,43.2 443.5,44.6 447.2,48.6 450.8,50.5 454.5,43.0 458.2,40.1 461.8,52.7 465.5,59.4 469.2,54.5 472.8,59.1 476.5,71.6 480.2,73.2 483.8,78.7 487.5,52.7 491.2,48.6 494.8,67.6 498.5,69.9 502.2,53.0 505.8,58.1 509.5,65.3 513.1,76.1 516.8,56.7 520.5,55.4 524.1,56.0 527.8,30.6 531.5,59.2 535.1,54.6 538.8,69.8 542.5,56.8 546.1,45.3 549.8,42.6 553.5,37.1 557.1,47.0 560.8,40.9 564.5,58.7 568.1,46.6 571.8,41.8 575.5,49.5 579.1,45.8 582.8,45.5 586.5,50.7 590.1,57.9 593.8,60.1 597.5,61.7 601.1,63.9 604.8,61.9 608.4,63.0 612.1,67.1 615.8,67.7 619.4,64.7 623.1,67.4 626.8,71.0 630.4,78.0 634.1,74.4 637.8,71.9 641.4,70.8 645.1,52.6 648.8,57.3 652.4,24.7 656.1,28.1 659.8,37.3 663.4,39.7 667.1,55.9 670.8,65.4 674.4,54.3 678.1,51.6 681.8,63.0 685.4,81.3 689.1,64.6 692.7,60.1 696.4,45.2 700.1,46.8 703.7,46.4 707.4,56.7 711.1,56.3 714.7,58.7 718.4,53.6 722.1,46.7 725.7,52.8 729.4,64.4 733.1,51.6 736.7,52.3 740.4,58.0 744.1,54.7 747.7,54.6 751.4,59.0 755.1,59.7 758.7,58.0 762.4,51.1 766.1,43.2 769.7,39.6 773.4,48.6 777.1,42.5 780.7,41.0 784.4,30.5 788.0,29.2 791.7,23.4 795.4,24.8 799.0,27.8 802.7,31.0 806.4,25.7 810.0,44.8 813.7,44.9 817.4,52.2 821.0,57.8 824.7,59.8 828.4,42.2 832.0,47.2 835.7,59.4 839.4,64.0 843.0,49.3 846.7,49.9 850.4,32.9 854.0,32.5 857.7,31.2 861.4,26.3 865.0,30.5 868.7,25.9 872.4,6.0 876.0,38.4 879.7,59.2 883.3,66.8 887.0,55.7 890.7,65.0 894.3,61.5 898.0,58.9 901.7,58.2 905.3,51.9 909.0,48.1 912.7,53.7 916.3,51.2 920.0,54.1" class="line-accent"/>
+      <text x="6" y="14" class="tag-title">MACD histogram — +0.08  <tspan class="axis">(-2 … 2)</tspan></text>
+    </svg>
+  <table class="tbl levels"><tr><td class="rk">Resistance R1 / R2</td><td class="rv">224.10 / 235.53</td></tr><tr><td class="rk">Support S1 / S2</td><td class="rv">205.06 / 198.39</td></tr><tr><td class="rk">Entry zone</td><td class="rv">210.20 – 214.82</td></tr><tr><td class="rk">Stop (1.8×ATR below entry)</td><td class="rv">193.54</td></tr><tr><td class="rk">Target (R2)</td><td class="rv">240.24</td></tr><tr><td class="rk">Signal</td><td class="rv"><b>BUY on weakness</b> — Mixed / Range-bound</td></tr></table>
+</section>
+
+<section id="s7" class="card">
+<header class="sec-head"><div class="sec-num">7</div><div><h2>SWOT Analysis</h2><p class="sec-sub">Comprehensive four-quadrant assessment</p></div></header>
+  <div class="swot-grid">
+      <div class="swot s"><h4>Strengths</h4><ul><li>—</li></ul></div>
+      <div class="swot w"><h4>Weaknesses</h4><ul><li>—</li></ul></div>
+      <div class="swot o"><h4>Opportunities</h4><ul><li>—</li></ul></div>
+      <div class="swot t"><h4>Threats</h4><ul><li>—</li></ul></div>
+    </div>
+</section>
+
+<section id="s8" class="card">
+<header class="sec-head"><div class="sec-num">8</div><div><h2>Investment Thesis &amp; Final Verdict</h2><p class="sec-sub">Bull / base / bear cases, probability-weighted expected value and the actionable conclusion</p></div></header>
+  <div class="cases"><div class="case bull">
+          <div class="case-head"><span class="case-label">Bull Case</span>
+          <span class="case-prob">30% prob.</span></div>
+          <p>AI inference demand stays supply-constrained through 2028; Rubin ships on time; sovereign deals hit $60B/yr. DC share holds 85%.</p>
+          <div class="case-target">12m target <b>310.00 USD</b> (+40.1%)</div>
+        </div><div class="case base">
+          <div class="case-head"><span class="case-label">Base Case</span>
+          <span class="case-prob">50% prob.</span></div>
+          <p>Capex grows 30%/yr through 2027, ASICs take ~10pts of open-model share; margins hold ~72%.</p>
+          <div class="case-target">12m target <b>245.00 USD</b> (+10.7%)</div>
+        </div><div class="case bear">
+          <div class="case-head"><span class="case-label">Bear Case</span>
+          <span class="case-prob">20% prob.</span></div>
+          <p>A 2-quarter AI-capex digestion phase + China ban widens; 2027 EPS guidance cut 15%; de-rate to 28x.</p>
+          <div class="case-target">12m target <b>150.00 USD</b> (-32.2%)</div>
+        </div></div>
+  <div class="ev-line">Probability-weighted expected value: <b>245.50 USD</b> (+10.9% vs. price)</div>
+  <div class="final v-buy">
+    <div class="final-label">FINAL VERDICT — NVDA</div>
+    <div class="final-score">STRONG BUY · composite 9.54/10</div>
+    <div class="final-zones">
+      <span>Entry <b>210.20–214.82</b></span>
+      <span>Stop <b>193.54</b></span>
+      <span>12m Target <b>285.00</b></span>
+      <span>Fair value <b>324.12</b></span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Generated 2026-10-15 12:40 by the Stock Research Agent (7-stage pipeline:
+  fundamentals/DCF · business model · 5-pillar moat · competitors &amp; core edge · sentiment/news/trends ·
+  technicals · SWOT &amp; thesis). Technicals are computed from a deterministic price path anchored to the
+  reported 52-week range. This report is research, not financial advice.</p>
+</footer>
+</main>
+<script>
+(function(){
+  var root=document.documentElement;
+  var btn=document.getElementById('themeBtn');
+  var saved=null; try{saved=localStorage.getItem('sra-theme');}catch(e){}
+  if(saved){root.setAttribute('data-theme',saved);}
+  function paint(){
+    var t=root.getAttribute('data-theme');
+    btn.textContent = t==='light' ? '🌙 Dark' : '☀ Light';
+  }
+  paint();
+  btn.addEventListener('click',function(){
+    var t=root.getAttribute('data-theme')==='light'?'dark':'light';
+    root.setAttribute('data-theme',t);
+    try{localStorage.setItem('sra-theme',t);}catch(e){}
+    paint();
+  });
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click',function(ev){
+      ev.preventDefault();
+      var el=document.querySelector(a.getAttribute('href'));
+      if(el){el.scrollIntoView({behavior:'smooth',block:'start'});}
+    });
+  });
+})();
+</script>
+</body>
+</html>

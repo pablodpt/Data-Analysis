@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AAPL — Stock Research Report</title>
+<style>
+:root{
+  --bg:#0b0f17; --bg2:#0f1522; --card:#121a2b; --card2:#16213a;
+  --line:#22304d; --txt:#e8eefb; --muted:#8fa3c8; --accent:#4da3ff;
+  --up:#2fd07c; --dn:#ff5d6c; --gold:#ffc857;
+  --s20:#ffd166; --s50:#4da3ff; --s200:#c084fc; --boll:#274066;
+  --sup:#2fd07c; --res:#ff5d6c;
+  --good:#2fd07c; --mid:#ffc857; --bad:#ff5d6c;
+}
+html[data-theme="light"]{
+  --bg:#f4f6fb; --bg2:#ffffff; --card:#ffffff; --card2:#eef2fa;
+  --line:#d7e0f0; --txt:#17233d; --muted:#5b6c8f; --accent:#1668d6;
+  --up:#0d9d5c; --dn:#d63347; --gold:#c78a00;
+  --s20:#d99a00; --s50:#1668d6; --s200:#7b3ff2; --boll:#dbe6f8;
+  --sup:#0d9d5c; --res:#d63347;
+  --good:#0d9d5c; --mid:#c78a00; --bad:#d63347;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.topnav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:10px 22px;background:var(--bg2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:.2px}
+.nav-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px}
+.nav-links a{color:var(--muted)}
+.nav-links a:hover{color:var(--txt);text-decoration:none}
+.theme-btn{background:var(--card);border:1px solid var(--line);color:var(--txt);
+  padding:5px 12px;border-radius:20px;cursor:pointer;font-size:13px}
+.hero{padding:26px 22px 10px;background:
+  radial-gradient(1000px 300px at 20% -50px, color-mix(in srgb, var(--accent) 14%, transparent), transparent)}
+.hero-top{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-end}
+h1{margin:6px 0 4px;font-size:28px}
+.big-ticker{font-size:30px;font-weight:800;letter-spacing:1px;margin-right:12px}
+.meta-line{color:var(--muted);margin:0;font-size:13.5px}
+.hero-price{text-align:right}
+.hero-last{font-size:30px;font-weight:800}
+.hero-chg{color:var(--muted);font-size:13.5px}
+.badge{display:inline-block;padding:6px 14px;border-radius:20px;font-weight:800;font-size:13px;letter-spacing:.5px}
+.v-buy{background:color-mix(in srgb,var(--up) 18%, transparent);color:var(--up);
+  border:1px solid color-mix(in srgb,var(--up) 45%, transparent)}
+.v-hold{background:color-mix(in srgb,var(--gold) 16%, transparent);color:var(--gold);
+  border:1px solid color-mix(in srgb,var(--gold) 45%, transparent)}
+.v-avoid{background:color-mix(in srgb,var(--dn) 16%, transparent);color:var(--dn);
+  border:1px solid color-mix(in srgb,var(--dn) 45%, transparent)}
+.banner{padding:10px 14px;border-radius:10px;margin:14px 0;font-size:13.5px}
+.banner.ok{background:color-mix(in srgb,var(--accent) 10%, transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 35%, transparent)}
+.banner.warn{background:color-mix(in srgb,var(--gold) 12%, transparent);
+  border:1px solid color-mix(in srgb,var(--gold) 45%, transparent)}
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi-strip.small .kpi{padding:9px 11px}
+.kpi-label{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.6px}
+.kpi-value{font-size:19px;font-weight:800;margin-top:3px}
+.kpi-sub{color:var(--muted);font-size:11.5px;margin-top:2px}
+.tone-up .kpi-value{color:var(--up)} .tone-dn .kpi-value{color:var(--dn)}
+main{padding:8px 22px 30px;max-width:1180px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:22px;margin:22px 0;scroll-margin-top:70px}
+.sec-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.sec-num{background:var(--card2);border:1px solid var(--line);color:var(--accent);
+  min-width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:17px}
+.sec-head h2{margin:0 0 2px;font-size:21px}
+.sec-sub{color:var(--muted);margin:0;font-size:13.5px}
+h3.sub{margin:18px 0 8px;font-size:15px}
+.prose{font-size:15px;line-height:1.65}
+.muted{color:var(--muted)} .small{font-size:12.5px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:860px){.two-col{grid-template-columns:1fr}}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl .rk{color:var(--muted);width:42%}
+.tbl .rv{font-weight:600}
+.tbl.peers th{padding:8px 10px;text-align:left;color:var(--muted);font-size:12px;
+  text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--line)}
+.tbl.peers td{padding:9px 10px}
+.tbl.levels{margin-top:14px;max-width:560px}
+.upside-box{margin-top:10px;padding:10px 14px;border-radius:10px;font-size:14.5px;
+  background:var(--card2);border:1px solid var(--line)}
+.upside-box.tone-up b{color:var(--up)} .upside-box.tone-dn b{color:var(--dn)}
+.segs{display:grid;gap:12px;margin-top:10px;max-width:720px}
+.seg-head{display:flex;justify-content:space-between;font-size:14px;font-weight:700}
+.seg-note{color:var(--muted);font-size:12.5px;margin-top:3px}
+.bar{height:9px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:4px}
+.bar.big{height:12px}
+.bar-fill{height:100%;border-radius:6px}
+.bar-fill.good{background:var(--good)} .bar-fill.mid{background:var(--mid)}
+.bar-fill.bad{background:var(--bad)} .bar-fill.seg-fill{background:var(--accent)}
+.moat-top{display:flex;gap:16px;align-items:center;margin:6px 0 14px;flex-wrap:wrap}
+.moat-badge{font-size:18px;font-weight:800;padding:8px 18px;border-radius:12px;
+  background:color-mix(in srgb,var(--gold) 15%, transparent);color:var(--gold);
+  border:1px solid color-mix(in srgb,var(--gold) 40%, transparent)}
+.moat-score{color:var(--muted)}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.pillar{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.pillar-head{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.pill-score{color:var(--accent)}
+.pillar-note{color:var(--muted);font-size:12.5px;margin-top:6px}
+.edge-box{margin-top:16px;padding:16px 18px;border-radius:14px;
+  background:color-mix(in srgb,var(--gold) 8%, var(--card2));
+  border:1px solid color-mix(in srgb,var(--gold) 40%, transparent)}
+.edge-title{font-weight:800;color:var(--gold);margin-bottom:6px}
+.sent-grid{display:grid;grid-template-columns:280px 1fr;gap:22px}
+@media(max-width:860px){.sent-grid{grid-template-columns:1fr}}
+.sent-score{font-size:30px;font-weight:800}
+.news-list{display:grid;gap:10px;align-content:start}
+.news{display:flex;gap:12px;background:var(--card2);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;border-left:4px solid var(--accent)}
+.news.pos{border-left-color:var(--up)} .news.neg{border-left-color:var(--dn)}
+.news-date{color:var(--muted);font-size:12px;min-width:86px;padding-top:2px}
+.news-src{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{background:var(--card2);border:1px solid var(--line);border-radius:20px;
+  padding:6px 13px;font-size:13px}
+.chart{width:100%;height:auto;display:block;margin-top:8px}
+.chart.mini{margin-top:6px}
+.grid{stroke:var(--line);stroke-width:1;opacity:.5}
+.price{fill:none;stroke:var(--accent);stroke-width:2.4}
+.sma20{fill:none;stroke:var(--s20);stroke-width:1.4;opacity:.95}
+.sma50{fill:none;stroke:var(--s50);stroke-width:1.4;opacity:.95}
+.sma200{fill:none;stroke:var(--s200);stroke-width:1.4;opacity:.95}
+.boll-fill{fill:var(--boll);opacity:.35}
+.boll-up,.boll-lo{fill:none;stroke:var(--boll);stroke-width:1;opacity:.9}
+.hi,.lo{stroke:var(--muted);stroke-width:1;stroke-dasharray:5 4;opacity:.8}
+.res{stroke:var(--res);stroke-width:1.2;stroke-dasharray:6 4;opacity:.85}
+.sup{stroke:var(--sup);stroke-width:1.2;stroke-dasharray:6 4;opacity:.85}
+.tag-hi,.tag-lo{fill:var(--muted);font-size:10.5px}
+.tag-res{fill:var(--res);font-size:10.5px;font-weight:700}
+.tag-sup{fill:var(--sup);font-size:10.5px;font-weight:700}
+.tag-title{fill:var(--txt);font-size:12px;font-weight:700}
+.axis{fill:var(--muted);font-size:10.5px}
+.ref{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4;opacity:.7}
+.line-accent{fill:none;stroke:var(--s200);stroke-width:1.8}
+.dot{fill:var(--accent)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+.sw{display:inline-block;width:16px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.sw-price{background:var(--accent)} .sw-20{background:var(--s20)}
+.sw-50{background:var(--s50)} .sw-200{background:var(--s200)}
+.sw-boll{background:var(--boll)} .sw-sup{background:var(--sup)} .sw-res{background:var(--res)}
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.swot-grid{grid-template-columns:1fr}}
+.swot{border-radius:14px;padding:16px 18px;border:1px solid var(--line)}
+.swot h4{margin:0 0 8px;font-size:15px}
+.swot ul{margin:0;padding-left:18px}
+.swot li{margin:6px 0;font-size:13.5px}
+.swot.s{background:color-mix(in srgb,var(--up) 8%, var(--card2));
+  border-color:color-mix(in srgb,var(--up) 40%, transparent)}
+.swot.w{background:color-mix(in srgb,var(--dn) 8%, var(--card2));
+  border-color:color-mix(in srgb,var(--dn) 40%, transparent)}
+.swot.o{background:color-mix(in srgb,var(--accent) 10%, var(--card2));
+  border-color:color-mix(in srgb,var(--accent) 40%, transparent)}
+.swot.t{background:color-mix(in srgb,var(--gold) 10%, var(--card2));
+  border-color:color-mix(in srgb,var(--gold) 40%, transparent)}
+.cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.case{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.case.bull{border-top:4px solid var(--up)} .case.base{border-top:4px solid var(--accent)}
+.case.bear{border-top:4px solid var(--dn)}
+.case-head{display:flex;justify-content:space-between;margin-bottom:8px}
+.case-label{font-weight:800}
+.case-prob{color:var(--muted);font-size:12.5px}
+.case p{margin:0 0 10px;font-size:13.5px;color:var(--txt)}
+.case-target{font-size:13.5px}
+.ev-line{margin-top:12px;color:var(--muted);font-size:14px}
+.verdict-banner{padding:20px 24px;border-radius:16px;margin-top:18px;font-size:16px}
+.verdict-banner p{margin:8px 0 0;font-size:15.5px;line-height:1.6}
+.vb-title{font-weight:800;font-size:18px}
+.final{margin-top:20px;padding:20px 24px;border-radius:16px;border:1px solid var(--line)}
+.final-label{font-weight:800;letter-spacing:.5px;font-size:14px;color:var(--muted)}
+.final-score{font-size:26px;font-weight:800;margin:6px 0 12px}
+.final.v-buy .final-score{color:var(--up)} .final.v-hold .final-score{color:var(--gold)}
+.final.v-avoid .final-score{color:var(--dn)}
+.final-zones{display:flex;gap:22px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.final-zones b{color:var(--txt)}
+.verdict-banner.v-buy{background:color-mix(in srgb,var(--up) 10%, var(--card));
+  border:1px solid color-mix(in srgb,var(--up) 45%, transparent)}
+.verdict-banner.v-hold{background:color-mix(in srgb,var(--gold) 10%, var(--card));
+  border:1px solid color-mix(in srgb,var(--gold) 45%, transparent)}
+.verdict-banner.v-avoid{background:color-mix(in srgb,var(--dn) 10%, var(--card));
+  border:1px solid color-mix(in srgb,var(--dn) 45%, transparent)}
+footer{color:var(--muted);font-size:12.5px;padding:10px 22px 40px;max-width:1180px;margin:0 auto}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">📈 Stock Research Agent</div>
+  <div class="nav-links">
+    <a href="#s1">1 Fundamentals</a><a href="#s2">2 Business</a><a href="#s3">3 Moat</a>
+    <a href="#s4">4 Competitors</a><a href="#s5">5 Sentiment</a><a href="#s6">6 Technicals</a>
+    <a href="#s7">7 SWOT</a><a href="#s8">8 Thesis &amp; Verdict</a>
+    <button id="themeBtn" class="theme-btn" type="button">☀ Light</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-top">
+    <div>
+      <div class="ticker-row"><span class="big-ticker">AAPL</span>
+        <span class="badge v-avoid">WAIT / REDUCE</span></div>
+      <h1>Apple Inc.</h1>
+      <p class="meta-line">Technology · Consumer Devices / Services · NASDAQ ·
+        US · Mkt cap $5.00T · October 2026 (local intelligence KB) + computed technicals</p>
+    </div>
+    <div class="hero-price">
+      <div class="hero-last">342.96 USD</div>
+      <div class="hero-chg">+9.7% 1M · +15.1% 3M</div>
+    </div>
+  </div>
+  <div class="banner ok">Data as of October 2026, compiled from public market sources into the local intelligence KB. Technical indicators are computed from the deterministic 12-month price path anchored to the 52-week range.</div>
+  <div class="kpi-strip"><div class="kpi "><div class="kpi-label">Last price</div><div class="kpi-value">342.96 USD</div><div class="kpi-sub">52w 243.42 – 348.15</div></div><div class="kpi tone-dn"><div class="kpi-label">Fair value</div><div class="kpi-value">196.71 USD</div><div class="kpi-sub">DCF / multiple model</div></div><div class="kpi tone-dn"><div class="kpi-label">Implied upside</div><div class="kpi-value">-42.6%</div><div class="kpi-sub">vs. fair value</div></div><div class="kpi "><div class="kpi-label">Composite score</div><div class="kpi-value">6.45/10</div><div class="kpi-sub">Val 1.5 · Qual 9.1 · Moat 9.2 · Sent 7.4 · Tech 8.2</div></div><div class="kpi "><div class="kpi-label">Moat</div><div class="kpi-value">Wide Moat</div><div class="kpi-sub">9.2/10 · 5-pillar model</div></div><div class="kpi "><div class="kpi-label">Sentiment</div><div class="kpi-value">7.4/10</div><div class="kpi-sub">Buy</div></div></div>
+</header>
+
+<main>
+<section id="s0" class="verdict-banner v-avoid">
+  <div class="vb-title">Is it worth it? — AAPL at 342.96 USD</div>
+  <p>NO — not worth buying at 342.96. Composite 6.5/10 with fair value 196.71 (-42.6%). Avoid new entries; existing holders should respect the 301.46 invalidation level.</p>
+</section>
+
+<section id="s1" class="card">
+<header class="sec-head"><div class="sec-num">1</div><div><h2>Fundamentals, Financial Health &amp; Intrinsic Valuation</h2><p class="sec-sub">Income statement, balance sheet, cash flow, growth, margins, ROIC/ROE, multiples and DCF fair value</p></div></header>
+  <div class="two-col">
+    <div>
+      <table class="tbl"><tr><td class="rk">Revenue (TTM)</td><td class="rv">$467B <span class='muted'>(+9.0% YoY)</span></td></tr><tr><td class="rk">Gross margin</td><td class="rv">48.7%</td></tr><tr><td class="rk">Operating margin</td><td class="rv">32.0%</td></tr><tr><td class="rk">Net margin</td><td class="rv">27.0%</td></tr><tr><td class="rk">EPS (TTM)</td><td class="rv">8.81 USD</td></tr><tr><td class="rk">P/E (TTM) / Fwd</td><td class="rv">38.9x / 33.2x</td></tr><tr><td class="rk">P/S · EV/EBITDA</td><td class="rv">10.7x · 26.0x</td></tr><tr><td class="rk">ROIC / ROE</td><td class="rv">55% / 118%</td></tr><tr><td class="rk">Free cash flow</td><td class="rv">$125B</td></tr><tr><td class="rk">Cash / Total debt</td><td class="rv">$98B / $97B</td></tr><tr><td class="rk">Dividend</td><td class="rv">1.04 USD/qtr (0.31% yield)</td></tr><tr><td class="rk">Quality score</td><td class="rv">9.100000000000001/10 (margins + growth + balance sheet)</td></tr></table>
+    </div>
+    <div>
+      <h3 class="sub">Intrinsic value — Multi-method fair value — 50% two-stage FCFE DCF (FCF/share 8.57, growth 8%→3.0%, discount 9.5%) + 50% growth-adjusted P/E. Net cash/share +0.07 shown for context (FCFE basis — not added back)</h3>
+      <table class="tbl"><tr><td class="rk">Year 1</td><td class="rv">FCF 9.26 · g 8.0% · PV 8.45</td></tr><tr><td class="rk">Year 2</td><td class="rv">FCF 9.91 · g 7.1% · PV 8.27</td></tr><tr><td class="rk">Year 3</td><td class="rv">FCF 10.54 · g 6.4% · PV 8.03</td></tr><tr><td class="rk">Year 4</td><td class="rv">FCF 11.15 · g 5.8% · PV 7.76</td></tr><tr><td class="rk">Year 5</td><td class="rv">FCF 11.74 · g 5.3% · PV 7.46</td></tr><tr><td class="rk">Terminal yr 10</td><td class="rv">PV of terminal value: 92.61</td></tr><tr><td class="rk">DCF intrinsic value</td><td class="rv">165.02 USD (50% weight)</td></tr><tr><td class="rk">Growth-adjusted P/E value</td><td class="rv">228.40 USD (target 25.9x × EPS) — 50% weight</td></tr><tr><td class="rk">Implied fair value</td><td class="rv"><b>196.71 USD</b></td></tr></table>
+      <div class="upside-box tone-dn">Implied upside vs. price: <b>-42.6%</b></div>
+    </div>
+  </div>
+</section>
+
+<section id="s2" class="card">
+<header class="sec-head"><div class="sec-num">2</div><div><h2>Business Model &amp; Revenue Architecture</h2><p class="sec-sub">How the company makes money, revenue segments and the operating flywheel</p></div></header>
+  <p class="prose">Apple is a device company that behaves like a consumer-fintech: hardware is the entry ticket to a 2.2B-device installed base monetized through Services (27% of revenue, ~75% gross margin). The 2026 inflection is on-device + cloud AI (Apple Intelligence v3) protecting the supercycle of iPhone refresh against foldable and AI-phone competition.</p>
+  <div class="segs"><div class="seg"><div class="seg-head"><span>iPhone</span><span>+51%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:51%"></div></div><div class="seg-note">iPhone 17 + first foldable &#x27;iPhone Fold&#x27; (Sept 2026)</div></div><div class="seg"><div class="seg-head"><span>Services</span><span>+27%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:27%"></div></div><div class="seg-note">App Store, iCloud, Apple Music, Apple Pay, Ads</div></div><div class="seg"><div class="seg-head"><span>Mac</span><span>+9%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:9%"></div></div><div class="seg-note">M4/M5 silicon refresh</div></div><div class="seg"><div class="seg-head"><span>Wearables/Home</span><span>+8%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:8%"></div></div><div class="seg-note">Vision Pro successor, Apple Watch S11</div></div><div class="seg"><div class="seg-head"><span>Other</span><span>+5%</span></div><div class="bar"><div class="bar-fill seg-fill" style="width:5%"></div></div><div class="seg-note">AirPods, iPads, accessories</div></div></div>
+  <p class="muted small">Employees: ~165,000 · Web: apple.com</p>
+</section>
+
+<section id="s3" class="card">
+<header class="sec-head"><div class="sec-num">3</div><div><h2>Economic Moat — 5-Pillar Scoring</h2><p class="sec-sub">Network effects · switching costs · intangibles · cost advantage · scale</p></div></header>
+  <div class="moat-top">
+    <div class="moat-badge">Wide Moat</div>
+    <div class="moat-score">Composite moat score: <b>9.2/10</b></div>
+  </div>
+  <div class="pillars"><div class="pillar"><div class="pillar-head"><span>Network Effects</span><span class="pill-score">7.5/10</span></div><div class="bar"><div class="bar-fill good" style="width:75%"></div></div><div class="pillar-note">iMessage/FaceTime/Find My/AirDrop: the social graph of 2.2B devices makes iPhone the only phone that &#x27;works&#x27; with your friends and family.</div></div><div class="pillar"><div class="pillar-head"><span>Switching Costs</span><span class="pill-score">9.5/10</span></div><div class="bar"><div class="bar-fill good" style="width:95%"></div></div><div class="pillar-note">Ecosystem lock (iCloud, Apple Pay, Health, family sharing) — 90%+ retain after upgrade; rivals must beat the whole stack, not the phone.</div></div><div class="pillar"><div class="pillar-head"><span>Intangibles (brand / IP)</span><span class="pill-score">9.5/10</span></div><div class="bar"><div class="bar-fill good" style="width:95%"></div></div><div class="pillar-note">The strongest consumer brand on earth; design language + hardware-software integration is unmatched; &#x27;Made to last&#x27; trust.</div></div><div class="pillar"><div class="pillar-head"><span>Cost Advantage</span><span class="pill-score">6.0/10</span></div><div class="bar"><div class="bar-fill mid" style="width:60%"></div></div><div class="pillar-note">Scale in components (display, NAND, modem) gives 2-3pts margin edge over Samsung, but Foxconn/TSMC dependence caps it.</div></div><div class="pillar"><div class="pillar-head"><span>Scale</span><span class="pill-score">9.0/10</span></div><div class="bar"><div class="bar-fill good" style="width:90%"></div></div><div class="pillar-note">$466.8B revenue, $125B FCF, net-cash balance sheet — war-chest scale no rival can match.</div></div></div>
+</section>
+
+<section id="s4" class="card">
+<header class="sec-head"><div class="sec-num">4</div><div><h2>Competitors &amp; Main Difference Against Competitors</h2><p class="sec-sub">Head-to-head peer table, positioning and the core structural edge</p></div></header>
+  <table class="tbl peers"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th>
+    <th>Rev (TTM)</th><th>P/E</th><th>Positioning</th></tr></thead>
+  <tbody><tr><td><b>GOOGL</b></td><td>Alphabet (Pixel)</td><td>$4.30T</td><td>$446B</td><td>24x</td><td>Pixel + Gemini set the AI phone bar; hardware is #3 in global smartphone share</td></tr><tr><td><b>MSFT</b></td><td>Microsoft (Windows/Copilot)</td><td>$4.00T</td><td>$332B</td><td>35x</td><td>Competes for the same &#x27;AI device&#x27; budget at the PC/laptop layer</td></tr><tr><td><b>QCOM</b></td><td>Qualcomm</td><td>$180B</td><td>$44B</td><td>18x</td><td>Apple&#x27;s #1 modem/SiP supplier — a rival in on-device AI silicon</td></tr><tr><td><b>META</b></td><td>Meta (Quest/Reality)</td><td>$1.90T</td><td>$228B</td><td>28x</td><td>Competes for next-form-factor (XR) time-to-screen with Apple Vision Pro</td></tr></tbody></table>
+  <div class="edge-box"><div class="edge-title">★ Core structural edge — the main difference</div>
+  <p>The core edge is TRUST + ECOSYSTEM GRAVITY: Apple is the only company that can sell a premium-priced phone, a service subscription and a payment rail into the same 2.2B device base. Competitors win on specs; Apple wins on the total cost of leaving — the switching cost is the whole digital life, not one app.</p></div>
+</section>
+
+<section id="s5" class="card">
+<header class="sec-head"><div class="sec-num">5</div><div><h2>Market Sentiment, Recent News &amp; Secular Trends</h2><p class="sec-sub">Sentiment score, analyst consensus, headline catalysts and the structural trends driving the stock</p></div></header>
+  <div class="sent-grid">
+    <div class="sent-meter">
+      <div class="sent-score">7.4/10</div>
+      <div class="bar big"><div class="bar-fill good" style="width:74%"></div></div>
+      <div class="muted">Buy · short interest 0.6% of float</div>
+      <div class="muted">Analyst target 400.00 USD (range 310.00 USD–460.00 USD)</div>
+    </div>
+    <div class="news-list"><div class="news pos"><div class="news-date">2026-10-05</div><div class="news-body"><b>iPhone Fold (first foldable) breaks 11-day pre-order records; 3x iPhone 17 launch week</b><span class="news-src">— Bloomberg</span></div></div><div class="news pos"><div class="news-date">2026-09-20</div><div class="news-body"><b>Services revenue +14% YoY; Apple Ads crosses $15B annualized</b><span class="news-src">— Apple PR</span></div></div><div class="news neg"><div class="news-date">2026-08-11</div><div class="news-body"><b>EU DMA: third-party app stores mandatory in Ireland; est. $1.2B revenue impact in 2027</b><span class="news-src">— Reuters</span></div></div></div>
+  </div>
+  <h3 class="sub">Secular trends</h3>
+  <div class="chips"><span class="chip">Foldable iPhone: first new hardware category since the Watch — 40M units est. for FY27</span><span class="chip">On-device AI (Apple Intelligence v3): privacy as the moat against Google&#x27;s cloud AI</span><span class="chip">Services mix &gt;30% by FY28: the re-rating story from 30x to 38x+ hardware multiple</span><span class="chip">EU DMA / China regulation: the two structural headwinds to watch</span></div>
+</section>
+
+<section id="s6" class="card">
+<header class="sec-head"><div class="sec-num">6</div><div><h2>Technical Analysis</h2><p class="sec-sub">12-month price action with SMA 20/50/200, Bollinger Bands, RSI, MACD, support/resistance and actionable zones</p></div></header>
+  <div class="kpi-strip small"><div class="kpi "><div class="kpi-label">1M / 3M change</div><div class="kpi-value">+9.7% / +15.1%</div><div class="kpi-sub">1Y +30.9%</div></div><div class="kpi "><div class="kpi-label">SMA 20 / 50</div><div class="kpi-value">335.22 / 321.50</div><div class="kpi-sub">SMA 200 280.54</div></div><div class="kpi "><div class="kpi-label">RSI (14)</div><div class="kpi-value">55</div><div class="kpi-sub">Neutral</div></div><div class="kpi "><div class="kpi-label">MACD</div><div class="kpi-value">-0.27</div><div class="kpi-sub">Bearish (MACD below signal)</div></div><div class="kpi "><div class="kpi-label">From 52w high</div><div class="kpi-value">-1.5%</div><div class="kpi-sub">from low +40.9%</div></div><div class="kpi "><div class="kpi-label">ATR (14)</div><div class="kpi-value">13.83 USD</div><div class="kpi-sub">volatility unit for zones</div></div></div>
+  <svg viewBox="0 0 920 340" class="chart" role="img" aria-label="12-month price chart">
+      <line x1="0" y1="330" x2="920" y2="330" class="grid"/><line x1="0" y1="250" x2="920" y2="250" class="grid"/><line x1="0" y1="170" x2="920" y2="170" class="grid"/><line x1="0" y1="90" x2="920" y2="90" class="grid"/><line x1="0" y1="10" x2="920" y2="10" class="grid"/><line x1="0" y1="10" x2="0" y2="330" class="grid"/><line x1="154" y1="10" x2="154" y2="330" class="grid"/><line x1="308" y1="10" x2="308" y2="330" class="grid"/><line x1="462" y1="10" x2="462" y2="330" class="grid"/><line x1="616" y1="10" x2="616" y2="330" class="grid"/><line x1="770" y1="10" x2="770" y2="330" class="grid"/><line x1="0" y1="33" x2="920" y2="33" class="hi"/><text x="6" y="29" class="tag-hi">52w High 348.15</text><line x1="0" y1="305" x2="920" y2="305" class="lo"/><text x="6" y="301" class="tag-lo">52w Low 243.42</text><line x1="0" y1="31" x2="920" y2="31" class="res"/><text x="6" y="42" class="tag-res">R1 348.85</text><line x1="0" y1="95" x2="920" y2="95" class="sup"/><text x="6" y="106" class="tag-sup">S1 324.30</text><line x1="0" y1="123" x2="920" y2="123" class="sup"/><text x="6" y="134" class="tag-sup">S2 313.55</text>
+      <polygon points="69.6,204.0 69.6,204.0 73.3,202.8 77.0,201.8 80.6,199.5 84.3,199.1 88.0,197.8 91.6,195.5 95.3,194.0 99.0,193.6 102.6,191.3 106.3,194.4 110.0,195.2 113.6,189.3 117.3,193.0 121.0,192.4 124.6,196.2 128.3,192.9 132.0,193.9 135.6,193.0 139.3,191.2 142.9,201.7 146.6,202.0 150.3,203.8 153.9,204.8 157.6,205.1 161.3,207.0 164.9,213.4 168.6,214.1 172.3,214.2 175.9,216.6 179.6,216.8 183.3,216.6 186.9,222.3 190.6,222.5 194.3,222.7 197.9,221.0 201.6,221.5 205.3,221.8 208.9,222.7 212.6,226.7 216.3,225.2 219.9,224.6 223.6,224.7 227.3,224.9 230.9,223.9 234.6,221.8 238.2,223.3 241.9,219.5 245.6,218.4 249.2,219.0 252.9,220.0 256.6,214.7 260.2,216.2 263.9,216.2 267.6,214.3 271.2,215.6 274.9,217.1 278.6,217.4 282.2,216.6 285.9,212.0 289.6,209.5 293.2,210.0 296.9,203.0 300.6,203.2 304.2,203.0 307.9,204.7 311.6,204.8 315.2,204.0 318.9,204.9 322.5,204.9 326.2,205.3 329.9,203.9 333.5,204.9 337.2,203.9 340.9,204.7 344.5,204.8 348.2,204.6 351.9,203.8 355.5,206.2 359.2,208.8 362.9,211.4 366.5,211.1 370.2,217.0 373.9,215.2 377.5,217.3 381.2,215.3 384.9,215.4 388.5,215.2 392.2,214.9 395.9,214.2 399.5,214.2 403.2,212.1 406.9,210.7 410.5,209.3 414.2,205.8 417.8,206.1 421.5,206.2 425.2,207.3 428.8,206.5 432.5,205.2 436.2,205.4 439.8,205.8 443.5,204.3 447.2,202.6 450.8,203.5 454.5,201.3 458.2,199.8 461.8,200.7 465.5,202.2 469.2,201.3 472.8,201.3 476.5,204.0 480.2,206.0 483.8,209.6 487.5,214.9 491.2,214.8 494.8,214.1 498.5,213.4 502.2,213.7 505.8,215.8 509.5,216.0 513.1,216.1 516.8,220.5 520.5,227.4 524.1,227.7 527.8,227.6 531.5,231.0 535.1,230.7 538.8,229.9 542.5,236.5 546.1,237.0 549.8,238.4 553.5,239.0 557.1,241.1 560.8,242.5 564.5,246.3 568.1,250.2 571.8,257.6 575.5,260.0 579.1,263.0 582.8,269.0 586.5,264.4 590.1,256.0 593.8,252.5 597.5,246.5 601.1,243.7 604.8,240.5 608.4,231.1 612.1,226.3 615.8,225.4 619.4,225.6 623.1,208.7 626.8,208.8 630.4,205.6 634.1,202.7 637.8,192.8 641.4,191.6 645.1,189.0 648.8,188.1 652.4,187.3 656.1,191.6 659.8,190.6 663.4,188.4 667.1,185.3 670.8,185.0 674.4,176.7 678.1,171.6 681.8,167.1 685.4,157.8 689.1,151.9 692.7,152.2 696.4,150.4 700.1,149.1 703.7,146.2 707.4,144.3 711.1,141.2 714.7,131.4 718.4,124.8 722.1,122.5 725.7,124.6 729.4,122.6 733.1,125.0 736.7,126.2 740.4,127.5 744.1,129.3 747.7,119.4 751.4,119.3 755.1,117.8 758.7,117.7 762.4,112.9 766.1,109.4 769.7,109.2 773.4,108.7 777.1,108.9 780.7,109.3 784.4,109.3 788.0,109.4 791.7,111.0 795.4,105.2 799.0,99.2 802.7,99.3 806.4,99.3 810.0,78.1 813.7,78.7 817.4,78.6 821.0,68.9 824.7,62.0 828.4,52.5 832.0,43.6 835.7,40.2 839.4,40.1 843.0,40.0 846.7,35.8 850.4,36.0 854.0,30.8 857.7,29.4 861.4,29.4 865.0,29.6 868.7,27.3 872.4,21.5 876.0,14.6 879.7,16.3 883.3,15.3 887.0,15.8 890.7,27.9 894.3,27.6 898.0,24.5 901.7,23.9 905.3,23.6 909.0,21.0 912.7,22.4 916.3,24.6 920.0,22.3 920.0,330 69.6,330" class="boll-fill"/>
+      <polyline points="69.6,204.0 73.3,202.8 77.0,201.8 80.6,199.5 84.3,199.1 88.0,197.8 91.6,195.5 95.3,194.0 99.0,193.6 102.6,191.3 106.3,194.4 110.0,195.2 113.6,189.3 117.3,193.0 121.0,192.4 124.6,196.2 128.3,192.9 132.0,193.9 135.6,193.0 139.3,191.2 142.9,201.7 146.6,202.0 150.3,203.8 153.9,204.8 157.6,205.1 161.3,207.0 164.9,213.4 168.6,214.1 172.3,214.2 175.9,216.6 179.6,216.8 183.3,216.6 186.9,222.3 190.6,222.5 194.3,222.7 197.9,221.0 201.6,221.5 205.3,221.8 208.9,222.7 212.6,226.7 216.3,225.2 219.9,224.6 223.6,224.7 227.3,224.9 230.9,223.9 234.6,221.8 238.2,223.3 241.9,219.5 245.6,218.4 249.2,219.0 252.9,220.0 256.6,214.7 260.2,216.2 263.9,216.2 267.6,214.3 271.2,215.6 274.9,217.1 278.6,217.4 282.2,216.6 285.9,212.0 289.6,209.5 293.2,210.0 296.9,203.0 300.6,203.2 304.2,203.0 307.9,204.7 311.6,204.8 315.2,204.0 318.9,204.9 322.5,204.9 326.2,205.3 329.9,203.9 333.5,204.9 337.2,203.9 340.9,204.7 344.5,204.8 348.2,204.6 351.9,203.8 355.5,206.2 359.2,208.8 362.9,211.4 366.5,211.1 370.2,217.0 373.9,215.2 377.5,217.3 381.2,215.3 384.9,215.4 388.5,215.2 392.2,214.9 395.9,214.2 399.5,214.2 403.2,212.1 406.9,210.7 410.5,209.3 414.2,205.8 417.8,206.1 421.5,206.2 425.2,207.3 428.8,206.5 432.5,205.2 436.2,205.4 439.8,205.8 443.5,204.3 447.2,202.6 450.8,203.5 454.5,201.3 458.2,199.8 461.8,200.7 465.5,202.2 469.2,201.3 472.8,201.3 476.5,204.0 480.2,206.0 483.8,209.6 487.5,214.9 491.2,214.8 494.8,214.1 498.5,213.4 502.2,213.7 505.8,215.8 509.5,216.0 513.1,216.1 516.8,220.5 520.5,227.4 524.1,227.7 527.8,227.6 531.5,231.0 535.1,230.7 538.8,229.9 542.5,236.5 546.1,237.0 549.8,238.4 553.5,239.0 557.1,241.1 560.8,242.5 564.5,246.3 568.1,250.2 571.8,257.6 575.5,260.0 579.1,263.0 582.8,269.0 586.5,264.4 590.1,256.0 593.8,252.5 597.5,246.5 601.1,243.7 604.8,240.5 608.4,231.1 612.1,226.3 615.8,225.4 619.4,225.6 623.1,208.7 626.8,208.8 630.4,205.6 634.1,202.7 637.8,192.8 641.4,191.6 645.1,189.0 648.8,188.1 652.4,187.3 656.1,191.6 659.8,190.6 663.4,188.4 667.1,185.3 670.8,185.0 674.4,176.7 678.1,171.6 681.8,167.1 685.4,157.8 689.1,151.9 692.7,152.2 696.4,150.4 700.1,149.1 703.7,146.2 707.4,144.3 711.1,141.2 714.7,131.4 718.4,124.8 722.1,122.5 725.7,124.6 729.4,122.6 733.1,125.0 736.7,126.2 740.4,127.5 744.1,129.3 747.7,119.4 751.4,119.3 755.1,117.8 758.7,117.7 762.4,112.9 766.1,109.4 769.7,109.2 773.4,108.7 777.1,108.9 780.7,109.3 784.4,109.3 788.0,109.4 791.7,111.0 795.4,105.2 799.0,99.2 802.7,99.3 806.4,99.3 810.0,78.1 813.7,78.7 817.4,78.6 821.0,68.9 824.7,62.0 828.4,52.5 832.0,43.6 835.7,40.2 839.4,40.1 843.0,40.0 846.7,35.8 850.4,36.0 854.0,30.8 857.7,29.4 861.4,29.4 865.0,29.6 868.7,27.3 872.4,21.5 876.0,14.6 879.7,16.3 883.3,15.3 887.0,15.8 890.7,27.9 894.3,27.6 898.0,24.5 901.7,23.9 905.3,23.6 909.0,21.0 912.7,22.4 916.3,24.6 920.0,22.3" class="boll-up"/>
+      <polyline points="69.6,288.2 73.3,291.7 77.0,290.3 80.6,295.9 84.3,297.7 88.0,300.3 91.6,309.2 95.3,307.6 99.0,307.0 102.6,306.6 106.3,308.1 110.0,308.1 113.6,309.0 117.3,310.2 121.0,309.2 124.6,308.8 128.3,308.5 132.0,308.6 135.6,307.6 139.3,307.7 142.9,304.0 146.6,301.4 150.3,302.6 153.9,297.4 157.6,295.5 161.3,289.7 164.9,276.6 168.6,277.0 172.3,277.1 175.9,277.0 179.6,274.0 183.3,277.3 186.9,273.7 190.6,273.3 194.3,274.2 197.9,274.2 201.6,280.5 205.3,280.6 208.9,281.0 212.6,281.1 216.3,280.8 219.9,280.4 223.6,280.0 227.3,280.2 230.9,283.0 234.6,289.1 238.2,291.4 241.9,292.9 245.6,292.9 249.2,293.3 252.9,296.7 256.6,297.1 260.2,296.4 263.9,296.9 267.6,296.7 271.2,296.3 274.9,292.5 278.6,292.6 282.2,296.6 285.9,296.7 289.6,297.6 293.2,297.8 296.9,299.4 300.6,300.0 304.2,300.3 307.9,296.0 311.6,292.8 315.2,293.1 318.9,294.3 322.5,294.2 326.2,289.2 329.9,289.8 333.5,290.2 337.2,287.7 340.9,288.2 344.5,288.2 348.2,286.1 351.9,285.3 355.5,280.7 359.2,281.8 362.9,281.8 366.5,281.2 370.2,278.2 373.9,276.8 377.5,270.8 381.2,274.1 384.9,274.6 388.5,274.7 392.2,272.7 395.9,271.1 399.5,273.9 403.2,284.8 406.9,284.6 410.5,285.1 414.2,285.5 417.8,286.5 421.5,288.9 425.2,289.4 428.8,291.4 432.5,290.3 436.2,290.7 439.8,291.4 443.5,291.8 447.2,292.3 450.8,293.2 454.5,297.2 458.2,296.7 461.8,303.9 465.5,305.7 469.2,306.0 472.8,306.0 476.5,298.6 480.2,300.0 483.8,299.8 487.5,299.4 491.2,299.3 494.8,298.1 498.5,298.0 502.2,296.7 505.8,296.8 509.5,296.9 513.1,298.7 516.8,300.4 520.5,299.8 524.1,302.3 527.8,302.5 531.5,305.9 535.1,306.6 538.8,310.0 542.5,310.6 546.1,313.4 549.8,316.8 553.5,319.7 557.1,322.5 560.8,323.4 564.5,322.8 568.1,321.0 571.8,317.5 575.5,319.0 579.1,317.3 582.8,316.2 586.5,318.9 590.1,323.5 593.8,324.7 597.5,326.9 601.1,326.2 604.8,325.0 608.4,326.7 612.1,325.8 615.8,323.1 619.4,321.4 623.1,326.5 626.8,322.3 630.4,317.4 634.1,314.2 637.8,314.8 641.4,312.9 645.1,309.7 648.8,301.0 652.4,298.2 656.1,286.1 659.8,284.1 663.4,283.3 667.1,281.1 670.8,279.8 674.4,279.3 678.1,277.2 681.8,277.8 685.4,279.2 689.1,275.0 692.7,263.4 696.4,263.9 700.1,256.1 703.7,253.7 707.4,250.2 711.1,250.5 714.7,248.7 718.4,246.6 722.1,243.9 725.7,236.9 729.4,230.4 733.1,222.4 736.7,215.7 740.4,211.5 744.1,199.4 747.7,202.7 751.4,203.0 755.1,199.9 758.7,199.8 762.4,200.5 766.1,199.8 769.7,197.8 773.4,196.3 777.1,195.3 780.7,193.6 784.4,193.4 788.0,193.3 791.7,194.1 795.4,195.0 799.0,192.6 802.7,192.7 806.4,189.9 810.0,200.0 813.7,195.3 817.4,200.6 821.0,205.7 824.7,201.4 828.4,203.3 832.0,202.4 835.7,202.2 839.4,202.0 843.0,199.3 846.7,196.6 850.4,190.2 854.0,185.3 857.7,177.7 861.4,177.2 865.0,168.9 868.7,167.5 872.4,168.0 876.0,163.5 879.7,156.6 883.3,157.0 887.0,149.9 890.7,129.2 894.3,129.2 898.0,129.6 901.7,129.6 905.3,129.7 909.0,128.8 912.7,120.9 916.3,111.4 920.0,110.4" class="boll-lo"/>
+      <polyline points="729.4,246.5 733.1,246.0 736.7,245.5 740.4,245.1 744.1,244.5 747.7,243.6 751.4,243.4 755.1,242.7 758.7,242.2 762.4,241.6 766.1,241.1 769.7,240.7 773.4,240.2 777.1,239.9 780.7,239.4 784.4,239.1 788.0,238.5 791.7,238.1 795.4,237.4 799.0,236.7 802.7,236.4 806.4,235.8 810.0,234.8 813.7,234.1 817.4,233.6 821.0,232.5 824.7,231.3 828.4,230.4 832.0,229.5 835.7,228.8 839.4,228.1 843.0,227.5 846.7,226.9 850.4,226.1 854.0,225.1 857.7,224.2 861.4,223.7 865.0,222.9 868.7,222.1 872.4,221.2 876.0,220.1 879.7,219.2 883.3,218.1 887.0,217.2 890.7,216.4 894.3,215.5 898.0,214.5 901.7,213.6 905.3,212.6 909.0,211.6 912.7,210.7 916.3,209.6 920.0,208.7" class="sma200"/>
+      <polyline points="179.6,249.8 183.3,250.0 186.9,249.4 190.6,249.5 194.3,249.4 197.9,248.6 201.6,249.5 205.3,249.1 208.9,249.1 212.6,249.3 216.3,249.7 219.9,250.0 223.6,250.1 227.3,250.8 230.9,251.1 234.6,252.6 238.2,253.0 241.9,252.8 245.6,252.4 249.2,252.7 252.9,254.7 256.6,253.5 260.2,253.5 263.9,253.1 267.6,252.3 271.2,251.3 274.9,250.5 278.6,250.8 282.2,251.6 285.9,251.5 289.6,250.6 293.2,250.9 296.9,250.9 300.6,250.8 304.2,251.5 307.9,251.7 311.6,252.2 315.2,251.8 318.9,252.2 322.5,252.8 326.2,252.4 329.9,251.5 333.5,251.2 337.2,250.9 340.9,250.7 344.5,250.6 348.2,250.7 351.9,250.4 355.5,250.7 359.2,250.9 362.9,251.1 366.5,250.6 370.2,250.8 373.9,250.1 377.5,249.7 381.2,250.6 384.9,249.9 388.5,249.3 392.2,249.0 395.9,248.3 399.5,248.8 403.2,249.9 406.9,249.4 410.5,248.8 414.2,247.6 417.8,246.9 421.5,246.8 425.2,247.3 428.8,248.0 432.5,247.6 436.2,247.0 439.8,247.7 443.5,247.4 447.2,246.4 450.8,246.8 454.5,247.9 458.2,247.2 461.8,248.2 465.5,247.9 469.2,248.0 472.8,248.8 476.5,248.9 480.2,250.1 483.8,250.0 487.5,249.8 491.2,249.6 494.8,249.7 498.5,250.2 502.2,250.3 505.8,250.3 509.5,250.7 513.1,251.9 516.8,252.6 520.5,253.6 524.1,254.3 527.8,255.3 531.5,256.5 535.1,257.8 538.8,258.5 542.5,259.3 546.1,260.3 549.8,261.5 553.5,262.8 557.1,264.3 560.8,265.4 564.5,265.5 568.1,265.9 571.8,267.2 575.5,268.5 579.1,269.2 582.8,270.1 586.5,269.2 590.1,269.4 593.8,270.1 597.5,270.7 601.1,270.8 604.8,270.6 608.4,270.1 612.1,269.3 615.8,269.9 619.4,270.5 623.1,269.1 626.8,269.8 630.4,269.9 634.1,269.4 637.8,267.3 641.4,267.5 645.1,266.0 648.8,264.8 652.4,264.9 656.1,264.2 659.8,263.6 663.4,262.6 667.1,261.5 670.8,260.8 674.4,259.2 678.1,257.9 681.8,256.8 685.4,254.6 689.1,252.8 692.7,251.0 696.4,249.0 700.1,246.7 703.7,244.5 707.4,242.3 711.1,239.7 714.7,236.1 718.4,232.8 722.1,230.1 725.7,227.8 729.4,224.7 733.1,222.0 736.7,219.2 740.4,216.6 744.1,213.3 747.7,209.8 751.4,208.1 755.1,205.3 758.7,202.3 762.4,199.4 766.1,195.8 769.7,193.7 773.4,191.8 777.1,189.9 780.7,188.2 784.4,186.2 788.0,183.6 791.7,182.3 795.4,179.7 799.0,176.4 802.7,173.7 806.4,172.8 810.0,168.6 813.7,166.8 817.4,165.8 821.0,163.2 824.7,159.9 828.4,156.7 832.0,153.7 835.7,150.8 839.4,148.7 843.0,146.7 846.7,143.9 850.4,141.9 854.0,138.4 857.7,136.4 861.4,135.1 865.0,133.0 868.7,131.3 872.4,129.0 876.0,126.2 879.7,124.5 883.3,122.0 887.0,120.0 890.7,118.4 894.3,116.3 898.0,114.7 901.7,113.2 905.3,111.1 909.0,108.4 912.7,106.8 916.3,104.4 920.0,102.1" class="sma50"/>
+      <polyline points="69.6,246.1 73.3,247.3 77.0,246.0 80.6,247.7 84.3,248.4 88.0,249.1 91.6,252.3 95.3,250.8 99.0,250.3 102.6,249.0 106.3,251.3 110.0,251.6 113.6,249.2 117.3,251.6 121.0,250.8 124.6,252.5 128.3,250.7 132.0,251.2 135.6,250.3 139.3,249.4 142.9,252.9 146.6,251.7 150.3,253.2 153.9,251.1 157.6,250.3 161.3,248.3 164.9,245.0 168.6,245.6 172.3,245.6 175.9,246.8 179.6,245.4 183.3,247.0 186.9,248.0 190.6,247.9 194.3,248.5 197.9,247.6 201.6,251.0 205.3,251.2 208.9,251.8 212.6,253.9 216.3,253.0 219.9,252.5 223.6,252.3 227.3,252.6 230.9,253.4 234.6,255.4 238.2,257.3 241.9,256.2 245.6,255.7 249.2,256.2 252.9,258.3 256.6,255.9 260.2,256.3 263.9,256.5 267.6,255.5 271.2,256.0 274.9,254.8 278.6,255.0 282.2,256.6 285.9,254.4 289.6,253.5 293.2,253.9 296.9,251.2 300.6,251.6 304.2,251.7 307.9,250.4 311.6,248.8 315.2,248.6 318.9,249.6 322.5,249.5 326.2,247.2 329.9,246.8 333.5,247.6 337.2,245.8 340.9,246.4 344.5,246.5 348.2,245.4 351.9,244.6 355.5,243.4 359.2,245.3 362.9,246.6 366.5,246.2 370.2,247.6 373.9,246.0 377.5,244.0 381.2,244.7 384.9,245.0 388.5,245.0 392.2,243.8 395.9,242.7 399.5,244.0 403.2,248.5 406.9,247.7 410.5,247.2 414.2,245.6 417.8,246.3 421.5,247.6 425.2,248.3 428.8,249.0 432.5,247.7 436.2,248.0 439.8,248.6 443.5,248.0 447.2,247.5 450.8,248.3 454.5,249.3 458.2,248.3 461.8,252.3 465.5,254.0 469.2,253.6 472.8,253.6 476.5,251.3 480.2,253.0 483.8,254.7 487.5,257.2 491.2,257.0 494.8,256.1 498.5,255.7 502.2,255.2 505.8,256.3 509.5,256.5 513.1,257.4 516.8,260.4 520.5,263.6 524.1,265.0 527.8,265.1 531.5,268.5 535.1,268.6 538.8,270.0 542.5,273.5 546.1,275.2 549.8,277.6 553.5,279.4 557.1,281.8 560.8,283.0 564.5,284.5 568.1,285.6 571.8,287.5 575.5,289.5 579.1,290.1 582.8,292.6 586.5,291.7 590.1,289.7 593.8,288.6 597.5,286.7 601.1,285.0 604.8,282.8 608.4,278.9 612.1,276.1 615.8,274.3 619.4,273.5 623.1,267.6 626.8,265.5 630.4,261.5 634.1,258.4 637.8,253.8 641.4,252.3 645.1,249.3 648.8,244.6 652.4,242.8 656.1,238.9 659.8,237.4 663.4,235.9 667.1,233.2 670.8,232.4 674.4,228.0 678.1,224.4 681.8,222.4 685.4,218.5 689.1,213.5 692.7,207.8 696.4,207.2 700.1,202.6 703.7,200.0 707.4,197.2 711.1,195.8 714.7,190.0 718.4,185.7 722.1,183.2 725.7,180.8 729.4,176.5 733.1,173.7 736.7,170.9 740.4,169.5 744.1,164.3 747.7,161.1 751.4,161.2 755.1,158.9 758.7,158.7 762.4,156.7 766.1,154.6 769.7,153.5 773.4,152.5 777.1,152.1 780.7,151.4 784.4,151.3 788.0,151.3 791.7,152.6 795.4,150.1 799.0,145.9 802.7,146.0 806.4,144.6 810.0,139.0 813.7,137.0 817.4,139.6 821.0,137.3 824.7,131.7 828.4,127.9 832.0,123.0 835.7,121.2 839.4,121.1 843.0,119.7 846.7,116.2 850.4,113.1 854.0,108.1 857.7,103.5 861.4,103.3 865.0,99.2 868.7,97.4 872.4,94.8 876.0,89.0 879.7,86.4 883.3,86.1 887.0,82.8 890.7,78.6 894.3,78.4 898.0,77.1 901.7,76.8 905.3,76.6 909.0,74.9 912.7,71.7 916.3,68.0 920.0,66.4" class="sma20"/>
+      <polyline points="0.0,257.2 3.7,260.4 7.3,256.7 11.0,262.1 14.7,276.4 18.3,241.5 22.0,267.7 25.7,257.6 29.3,253.2 33.0,222.1 36.7,231.8 40.3,255.0 44.0,218.4 47.6,262.1 51.3,216.8 55.0,258.1 58.6,232.8 62.3,260.5 66.0,243.4 69.6,188.6 73.3,279.8 77.0,235.6 80.6,290.5 84.3,275.5 88.0,290.3 91.6,306.6 95.3,236.8 99.0,248.7 102.6,226.1 106.3,268.3 110.0,238.5 113.6,205.9 117.3,267.1 121.0,246.3 124.6,251.2 128.3,221.3 132.0,243.2 135.6,242.6 139.3,225.8 142.9,257.3 146.6,256.5 150.3,264.5 153.9,249.3 157.6,260.4 161.3,250.5 164.9,239.1 168.6,248.5 172.3,250.4 175.9,248.9 179.6,240.5 183.3,270.0 186.9,226.8 190.6,264.7 194.3,258.2 197.9,233.0 201.6,289.4 205.3,247.6 208.9,255.0 212.6,266.6 216.3,240.4 219.9,245.6 223.6,261.3 227.3,254.4 230.9,277.4 234.6,290.8 238.2,277.2 241.9,225.1 245.6,240.1 249.2,259.0 252.9,284.1 256.6,221.3 260.2,235.3 263.9,269.1 267.6,236.9 271.2,242.5 274.9,266.2 278.6,252.5 282.2,286.1 285.9,222.0 289.6,223.8 293.2,253.2 296.9,207.1 300.6,262.1 304.2,279.4 307.9,264.1 311.6,246.1 315.2,220.4 318.9,261.4 322.5,257.2 326.2,237.6 329.9,213.9 333.5,249.4 337.2,233.3 340.9,250.2 344.5,243.7 348.2,244.0 351.9,236.3 355.5,263.6 359.2,259.9 362.9,249.1 366.5,244.6 370.2,235.9 373.9,229.8 377.5,239.8 381.2,277.9 384.9,252.6 388.5,219.4 392.2,238.1 395.9,234.8 399.5,264.2 403.2,302.9 406.9,233.2 410.5,223.7 414.2,218.7 417.8,257.6 421.5,269.1 425.2,251.4 428.8,276.9 432.5,235.0 436.2,254.6 439.8,256.2 443.5,224.3 447.2,219.3 450.8,256.7 454.5,296.5 458.2,232.6 461.8,300.6 465.5,270.7 469.2,228.1 472.8,264.7 476.5,256.1 480.2,267.3 483.8,257.7 487.5,268.2 491.2,254.5 494.8,250.1 498.5,244.0 502.2,267.2 505.8,256.8 509.5,257.6 513.1,275.3 516.8,284.5 520.5,282.0 524.1,285.6 527.8,297.3 531.5,301.0 535.1,303.5 538.8,297.9 542.5,299.2 546.1,297.6 549.8,304.5 553.5,302.4 557.1,306.6 560.8,291.4 564.5,286.1 568.1,272.1 571.8,281.7 575.5,306.6 579.1,269.4 582.8,306.6 586.5,257.2 590.1,245.8 593.8,259.5 597.5,248.1 601.1,262.5 604.8,257.2 608.4,225.8 612.1,240.6 615.8,263.2 619.4,282.9 623.1,186.6 626.8,260.3 630.4,226.6 634.1,230.0 637.8,192.9 641.4,241.5 645.1,223.2 648.8,211.1 652.4,233.4 656.1,228.6 659.8,227.0 663.4,216.5 667.1,205.6 670.8,231.8 674.4,175.8 678.1,184.2 681.8,186.6 685.4,161.2 689.1,163.4 692.7,169.2 696.4,174.5 700.1,168.9 703.7,173.8 707.4,174.7 711.1,165.8 714.7,125.2 718.4,136.5 722.1,161.1 725.7,185.2 729.4,143.2 733.1,170.7 736.7,161.3 740.4,177.5 744.1,127.8 747.7,110.7 751.4,186.0 755.1,140.8 758.7,158.2 762.4,123.2 766.1,126.8 769.7,153.4 773.4,147.9 777.1,166.5 780.7,160.5 784.4,164.0 788.0,125.6 791.7,160.6 795.4,112.3 799.0,100.9 802.7,145.3 806.4,143.5 810.0,48.6 813.7,137.3 817.4,179.9 821.0,64.2 824.7,74.9 828.4,64.5 832.0,60.8 835.7,86.5 839.4,124.1 843.0,125.1 846.7,78.9 850.4,104.9 854.0,59.8 857.7,73.1 861.4,120.5 865.0,79.6 868.7,75.3 872.4,48.6 876.0,30.9 879.7,91.3 883.3,42.8 887.0,70.7 890.7,94.8 894.3,61.0 898.0,48.0 901.7,58.4 905.3,58.5 909.0,51.6 912.7,59.6 916.3,52.0 920.0,46.2" class="price"/>
+      <circle cx="918" cy="46" r="3.5" class="dot"/>
+      <text x="916" y="326" class="axis" text-anchor="end">233.95</text><text x="916" y="246" class="axis" text-anchor="end">264.68</text><text x="916" y="166" class="axis" text-anchor="end">295.41</text><text x="916" y="86" class="axis" text-anchor="end">326.14</text><text x="916" y="6" class="axis" text-anchor="end">356.87</text>
+    </svg>
+    <div class="legend">
+      <span><i class="sw sw-price"></i>Price</span>
+      <span><i class="sw sw-20"></i>SMA 20</span>
+      <span><i class="sw sw-50"></i>SMA 50</span>
+      <span><i class="sw sw-200"></i>SMA 200</span>
+      <span><i class="sw sw-boll"></i>Bollinger 20/2</span>
+      <span><i class="sw sw-sup"></i>Support</span>
+      <span><i class="sw sw-res"></i>Resistance</span>
+    </div>
+  <svg viewBox="0 0 920 96" class="chart mini" role="img" aria-label="RSI 14 — 55 (Neutral)">
+      <line x1="0" y1="27" x2="920" y2="27" class="ref"/>
+      <polyline points="51.3,18.0 55.0,27.5 58.6,22.3 62.3,28.2 66.0,24.7 69.6,15.0 73.3,31.5 77.0,24.5 80.6,32.5 84.3,30.1 88.0,32.2 91.6,34.5 95.3,23.4 99.0,25.2 102.6,21.9 106.3,28.6 110.0,24.1 113.6,19.5 117.3,28.8 121.0,25.8 124.6,26.5 128.3,22.1 132.0,25.7 135.6,25.6 139.3,22.8 142.9,28.4 146.6,28.2 150.3,29.7 153.9,26.6 157.6,28.8 161.3,26.7 164.9,24.2 168.6,26.4 172.3,26.9 175.9,26.5 179.6,24.3 183.3,32.1 186.9,21.2 190.6,30.2 194.3,28.6 197.9,22.8 201.6,34.7 205.3,25.9 208.9,27.3 212.6,29.7 216.3,24.2 219.9,25.3 223.6,28.8 227.3,27.2 230.9,32.3 234.6,35.1 238.2,31.5 241.9,19.7 245.6,23.3 249.2,27.6 252.9,32.9 256.6,20.0 260.2,23.0 263.9,29.7 267.6,23.5 271.2,24.7 274.9,29.4 278.6,26.5 282.2,33.0 285.9,20.9 289.6,21.3 293.2,27.1 296.9,19.2 300.6,28.9 304.2,31.6 307.9,28.9 311.6,25.7 315.2,21.3 318.9,28.7 322.5,27.9 326.2,24.3 329.9,20.2 333.5,27.1 337.2,24.2 340.9,27.4 344.5,26.1 348.2,26.2 351.9,24.5 355.5,30.6 359.2,29.7 362.9,27.0 366.5,25.9 370.2,23.7 373.9,22.1 377.5,25.1 381.2,35.0 384.9,27.9 388.5,20.1 392.2,24.9 395.9,24.1 399.5,31.4 403.2,39.4 406.9,23.5 410.5,21.7 414.2,20.8 417.8,29.2 421.5,31.5 425.2,27.5 428.8,32.7 432.5,23.8 436.2,27.8 439.8,28.2 443.5,21.6 447.2,20.6 450.8,28.9 454.5,36.3 458.2,23.7 461.8,34.7 465.5,29.5 469.2,22.9 472.8,28.6 476.5,27.2 480.2,29.0 483.8,27.3 487.5,29.2 491.2,26.5 494.8,25.7 498.5,24.5 502.2,29.4 505.8,27.1 509.5,27.3 513.1,31.3 516.8,33.3 520.5,32.6 524.1,33.5 527.8,36.4 531.5,37.3 535.1,38.0 538.8,35.8 542.5,36.2 546.1,35.5 549.8,37.8 553.5,36.8 557.1,38.3 560.8,30.8 564.5,28.4 568.1,22.4 571.8,26.7 575.5,36.4 579.1,22.0 582.8,33.9 586.5,19.8 590.1,17.2 593.8,21.3 597.5,18.5 601.1,23.0 604.8,21.5 608.4,13.8 612.1,18.6 615.8,25.4 619.4,30.7 623.1,10.4 626.8,26.2 630.4,20.6 634.1,21.3 637.8,15.4 641.4,24.8 645.1,21.8 648.8,19.9 652.4,24.2 656.1,23.3 659.8,23.0 663.4,21.0 667.1,18.9 670.8,25.1 674.4,14.7 678.1,16.7 681.8,17.3 685.4,12.8 689.1,13.4 692.7,15.0 696.4,16.6 700.1,15.4 703.7,17.0 707.4,17.3 711.1,15.0 714.7,6.0 718.4,10.2 722.1,18.5 725.7,25.6 729.4,15.8 733.1,23.2 736.7,21.1 740.4,25.3 744.1,14.9 747.7,11.8 751.4,28.9 755.1,20.8 758.7,24.2 762.4,18.4 766.1,19.1 769.7,24.6 773.4,23.5 777.1,27.4 780.7,26.1 784.4,26.9 788.0,18.9 791.7,26.7 795.4,17.8 799.0,16.0 802.7,25.3 806.4,25.0 810.0,10.4 813.7,25.7 817.4,31.6 821.0,17.3 824.7,18.8 828.4,17.6 832.0,17.2 835.7,21.3 839.4,26.9 843.0,27.0 846.7,20.4 850.4,24.5 854.0,18.4 857.7,20.6 861.4,27.9 865.0,22.2 868.7,21.6 872.4,18.0 876.0,15.6 879.7,25.7 883.3,19.2 887.0,23.5 890.7,27.1 894.3,22.3 898.0,20.5 901.7,22.3 905.3,22.3 909.0,21.2 912.7,22.8 916.3,21.4 920.0,20.3" class="line-accent"/>
+      <text x="6" y="14" class="tag-title">RSI 14 — 55 (Neutral)  <tspan class="axis">(0 … 66)</tspan></text>
+    </svg>
+  <svg viewBox="0 0 920 96" class="chart mini" role="img" aria-label="MACD histogram — -0.27">
+      <line x1="0" y1="45" x2="920" y2="45" class="ref"/>
+      <polyline points="3.7,46.4 7.3,45.7 11.0,47.3 14.7,53.8 18.3,43.7 22.0,47.7 25.7,46.1 29.3,43.3 33.0,29.4 36.7,25.4 40.3,33.0 44.0,24.2 47.6,36.9 51.3,27.9 55.0,39.3 58.6,37.2 62.3,47.3 66.0,47.0 69.6,25.6 73.3,49.1 77.0,46.5 80.6,66.5 84.3,72.3 88.0,80.4 91.6,90.0 95.3,66.4 99.0,55.0 102.6,38.5 106.3,44.8 110.0,37.0 113.6,19.8 117.3,34.1 121.0,35.6 124.6,38.9 128.3,29.7 132.0,33.4 135.6,36.2 139.3,31.9 142.9,42.3 146.6,48.9 150.3,56.1 153.9,54.2 157.6,56.9 161.3,54.3 164.9,47.7 168.6,47.2 172.3,47.5 175.9,47.0 179.6,43.4 183.3,52.7 186.9,41.4 190.6,49.2 194.3,51.4 197.9,42.7 201.6,59.3 205.3,52.6 208.9,50.9 212.6,54.0 216.3,45.2 219.9,41.6 223.6,45.6 227.3,45.3 230.9,54.0 234.6,64.1 238.2,64.1 241.9,42.5 245.6,34.8 249.2,37.8 252.9,49.7 256.6,32.2 260.2,27.4 263.9,38.3 267.6,33.0 271.2,32.4 274.9,41.9 278.6,42.7 282.2,56.5 285.9,39.5 289.6,29.9 293.2,36.1 296.9,22.6 300.6,36.9 304.2,53.1 307.9,57.0 311.6,51.9 315.2,38.4 318.9,46.3 322.5,49.7 326.2,44.0 329.9,31.3 333.5,38.0 337.2,36.4 340.9,42.6 344.5,44.2 348.2,45.6 351.9,43.5 355.5,53.1 359.2,57.4 362.9,55.3 366.5,51.8 370.2,46.0 373.9,39.9 377.5,40.4 381.2,55.9 384.9,55.2 388.5,41.4 392.2,40.2 395.9,38.5 399.5,49.4 403.2,71.1 406.9,56.2 410.5,42.5 414.2,32.1 417.8,41.4 421.5,52.0 425.2,51.4 428.8,60.6 432.5,49.2 436.2,49.4 439.8,49.9 443.5,37.4 447.2,28.0 450.8,37.6 454.5,59.5 458.2,47.6 461.8,66.4 465.5,65.4 469.2,46.9 472.8,49.4 476.5,47.2 480.2,50.0 483.8,47.6 487.5,49.8 491.2,45.5 494.8,40.9 498.5,35.7 502.2,41.8 505.8,41.6 509.5,41.9 513.1,49.0 516.8,56.7 520.5,59.8 524.1,62.2 527.8,67.1 531.5,70.2 535.1,71.5 538.8,68.3 542.5,65.2 546.1,61.0 549.8,59.8 553.5,56.8 557.1,55.4 560.8,47.4 564.5,39.6 568.1,29.0 571.8,26.3 575.5,34.8 579.1,25.7 582.8,35.0 586.5,21.7 590.1,9.8 593.8,9.1 597.5,6.0 601.1,11.5 604.8,14.7 608.4,6.0 612.1,8.5 615.8,21.0 619.4,38.0 623.1,11.8 626.8,26.1 630.4,23.3 634.1,24.5 637.8,12.3 641.4,25.9 645.1,28.9 648.8,27.5 652.4,37.0 656.1,42.1 659.8,45.6 663.4,44.4 667.1,40.1 670.8,48.5 674.4,32.5 678.1,27.2 681.8,26.5 685.4,17.9 689.1,15.7 692.7,19.1 696.4,25.6 700.1,29.6 703.7,35.9 707.4,41.8 711.1,43.3 714.7,29.6 718.4,27.4 722.1,37.7 725.7,55.2 729.4,50.5 733.1,59.1 736.7,61.2 740.4,69.2 744.1,54.5 747.7,39.2 751.4,60.4 755.1,56.2 758.7,60.8 762.4,50.1 766.1,45.5 769.7,53.9 773.4,57.5 777.1,67.2 780.7,70.7 784.4,73.6 788.0,59.7 791.7,64.6 795.4,48.4 799.0,34.3 802.7,43.9 806.4,50.0 810.0,17.2 813.7,33.4 817.4,61.5 821.0,33.9 824.7,22.0 828.4,12.5 832.0,7.7 835.7,17.6 839.4,40.9 843.0,57.1 846.7,49.6 850.4,55.8 854.0,42.5 857.7,40.4 861.4,58.8 865.0,54.6 868.7,50.7 872.4,38.4 876.0,25.1 879.7,42.3 883.3,35.3 887.0,43.3 890.7,58.8 894.3,55.6 898.0,48.9 901.7,49.5 905.3,50.6 909.0,49.2 912.7,52.1 916.3,51.5 920.0,49.4" class="line-accent"/>
+      <text x="6" y="14" class="tag-title">MACD histogram — -0.27  <tspan class="axis">(-3 … 2)</tspan></text>
+    </svg>
+  <table class="tbl levels"><tr><td class="rk">Resistance R1 / R2</td><td class="rv">348.85 / 376.76</td></tr><tr><td class="rk">Support S1 / S2</td><td class="rv">324.30 / 313.55</td></tr><tr><td class="rk">Entry zone</td><td class="rv">326.36 – 333.28</td></tr><tr><td class="rk">Stop (1.8×ATR below entry)</td><td class="rv">301.46</td></tr><tr><td class="rk">Target (R2)</td><td class="rv">376.76</td></tr><tr><td class="rk">Signal</td><td class="rv"><b>BUY on weakness</b> — Uptrend</td></tr></table>
+</section>
+
+<section id="s7" class="card">
+<header class="sec-head"><div class="sec-num">7</div><div><h2>SWOT Analysis</h2><p class="sec-sub">Comprehensive four-quadrant assessment</p></div></header>
+  <div class="swot-grid">
+      <div class="swot s"><h4>Strengths</h4><ul><li>—</li></ul></div>
+      <div class="swot w"><h4>Weaknesses</h4><ul><li>—</li></ul></div>
+      <div class="swot o"><h4>Opportunities</h4><ul><li>—</li></ul></div>
+      <div class="swot t"><h4>Threats</h4><ul><li>—</li></ul></div>
+    </div>
+</section>
+
+<section id="s8" class="card">
+<header class="sec-head"><div class="sec-num">8</div><div><h2>Investment Thesis &amp; Final Verdict</h2><p class="sec-sub">Bull / base / bear cases, probability-weighted expected value and the actionable conclusion</p></div></header>
+  <div class="cases"><div class="case bull">
+          <div class="case-head"><span class="case-label">Bull Case</span>
+          <span class="case-prob">25% prob.</span></div>
+          <p>Foldable + AI supercycle: 200M iPhone units in FY27, Services $150B, re-rate to 42x.</p>
+          <div class="case-target">12m target <b>440.00 USD</b> (+28.3%)</div>
+        </div><div class="case base">
+          <div class="case-head"><span class="case-label">Base Case</span>
+          <span class="case-prob">55% prob.</span></div>
+          <p>iPhone 500M units, Services +12%, steady-state 38x earnings with buybacks.</p>
+          <div class="case-target">12m target <b>385.00 USD</b> (+12.3%)</div>
+        </div><div class="case bear">
+          <div class="case-head"><span class="case-label">Bear Case</span>
+          <span class="case-prob">20% prob.</span></div>
+          <p>China share drops to 13%, EU DMA bites, AI lag persists: 32x multiple, iPhone -5%.</p>
+          <div class="case-target">12m target <b>270.00 USD</b> (-21.3%)</div>
+        </div></div>
+  <div class="ev-line">Probability-weighted expected value: <b>375.75 USD</b> (+9.6% vs. price)</div>
+  <div class="final v-avoid">
+    <div class="final-label">FINAL VERDICT — AAPL</div>
+    <div class="final-score">WAIT / REDUCE · composite 6.45/10</div>
+    <div class="final-zones">
+      <span>Entry <b>326.36–333.28</b></span>
+      <span>Stop <b>301.46</b></span>
+      <span>12m Target <b>400.00</b></span>
+      <span>Fair value <b>196.71</b></span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Generated 2026-10-15 12:40 by the Stock Research Agent (7-stage pipeline:
+  fundamentals/DCF · business model · 5-pillar moat · competitors &amp; core edge · sentiment/news/trends ·
+  technicals · SWOT &amp; thesis). Technicals are computed from a deterministic price path anchored to the
+  reported 52-week range. This report is research, not financial advice.</p>
+</footer>
+</main>
+<script>
+(function(){
+  var root=document.documentElement;
+  var btn=document.getElementById('themeBtn');
+  var saved=null; try{saved=localStorage.getItem('sra-theme');}catch(e){}
+  if(saved){root.setAttribute('data-theme',saved);}
+  function paint(){
+    var t=root.getAttribute('data-theme');
+    btn.textContent = t==='light' ? '🌙 Dark' : '☀ Light';
+  }
+  paint();
+  btn.addEventListener('click',function(){
+    var t=root.getAttribute('data-theme')==='light'?'dark':'light';
+    root.setAttribute('data-theme',t);
+    try{localStorage.setItem('sra-theme',t);}catch(e){}
+    paint();
+  });
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click',function(ev){
+      ev.preventDefault();
+      var el=document.querySelector(a.getAttribute('href'));
+      if(el){el.scrollIntoView({behavior:'smooth',block:'start'});}
+    });
+  });
+})();
+</script>
+</body>
+</html>

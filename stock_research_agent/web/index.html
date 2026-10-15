@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Stock Research Agent</title>
+<style>
+:root{
+  --bg:#0b0f17; --bg2:#0f1522; --card:#121a2b; --card2:#16213a; --line:#22304d;
+  --txt:#e8eefb; --muted:#8fa3c8; --accent:#4da3ff; --up:#2fd07c; --dn:#ff5d6c; --gold:#ffc857;
+}
+html[data-theme="light"]{
+  --bg:#f4f6fb; --bg2:#fff; --card:#fff; --card2:#eef2fa; --line:#d7e0f0;
+  --txt:#17233d; --muted:#5b6c8f; --accent:#1668d6; --up:#0d9d5c; --dn:#d63347; --gold:#c78a00;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:28px 18px 60px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+.brand{font-weight:800;font-size:19px}
+.theme-btn{background:var(--card);border:1px solid var(--line);color:var(--txt);
+  padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px}
+h1{font-size:26px;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+.searchbox{display:flex;gap:10px;margin-bottom:10px}
+input[type=text]{flex:1;background:var(--card);border:1px solid var(--line);color:var(--txt);
+  padding:13px 16px;border-radius:12px;font-size:15px;outline:none}
+input[type=text]:focus{border-color:var(--accent)}
+button.go{background:var(--accent);border:none;color:#fff;font-weight:700;
+  padding:13px 26px;border-radius:12px;cursor:pointer;font-size:15px}
+button.go:disabled{opacity:.55;cursor:wait}
+.hint{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+.hint code{color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:20px;
+  padding:6px 13px;font-size:13px;cursor:pointer;color:var(--txt)}
+.chip:hover{border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+.progress{display:none}
+.steps{display:grid;gap:9px}
+.step{display:flex;gap:12px;align-items:center;color:var(--muted);font-size:14px}
+.step .dot{width:12px;height:12px;border-radius:50%;background:var(--card2);
+  border:1px solid var(--line);flex:none;transition:all .2s}
+.step.active{color:var(--txt)}
+.step.active .dot{background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 25%,transparent)}
+.step.done{color:var(--txt)}
+.step.done .dot{background:var(--up)}
+.result{display:none}
+.res-head{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.res-ticker{font-size:22px;font-weight:800}
+.badge{display:inline-block;padding:6px 14px;border-radius:20px;font-weight:800;font-size:13px}
+.v-buy{background:color-mix(in srgb,var(--up) 18%,transparent);color:var(--up);
+  border:1px solid color-mix(in srgb,var(--up) 45%,transparent)}
+.v-hold{background:color-mix(in srgb,var(--gold) 16%,transparent);color:var(--gold);
+  border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
+.v-avoid{background:color-mix(in srgb,var(--dn) 16%,transparent);color:var(--dn);
+  border:1px solid color-mix(in srgb,var(--dn) 45%,transparent)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0}
+.kpi{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.kpi .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.kpi .v{font-size:17px;font-weight:800;margin-top:3px}
+.kpi .s{color:var(--muted);font-size:11.5px}
+.worth{font-size:14.5px;line-height:1.6;background:var(--card2);border:1px solid var(--line);
+  border-radius:12px;padding:14px 16px;margin:14px 0}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.btnrow a,.btnrow button{background:var(--accent);color:#fff;border:none;padding:11px 20px;
+  border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;
+  display:inline-block}
+.btnrow a.ghost{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+.reports h3{margin:0 0 10px;font-size:16px}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;
+  border-bottom:1px solid var(--line);font-size:14px}
+.rrow:last-child{border-bottom:none}
+.rrow a{font-weight:700}
+.err{display:none;background:color-mix(in srgb,var(--dn) 12%,var(--card));
+  border:1px solid color-mix(in srgb,var(--dn) 45%,transparent);color:var(--txt);
+  border-radius:12px;padding:12px 16px;font-size:14px}
+.est{color:var(--gold);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">📈 Stock Research Agent</div>
+    <button id="themeBtn" class="theme-btn" type="button">☀ Light</button>
+  </div>
+  <h1>Research any stock, on demand</h1>
+  <p class="sub">7-stage pipeline: Fundamentals &amp; DCF · Business Model · 5-Pillar Moat · Competitors &amp; Core Edge ·
+  Sentiment, News &amp; Trends · Technicals (SMA/RSI/MACD/S-R) · SWOT &amp; "Is It Worth It?" verdict → standalone HTML report.</p>
+
+  <div class="searchbox">
+    <input id="q" type="text" list="tickers" placeholder="Ticker or company name — e.g. NVDA, Inditex, 3M Company" autocomplete="off"/>
+    <datalist id="tickers"></datalist>
+    <button id="go" class="go">Research</button>
+  </div>
+  <div class="hint">Keyboard: <code>Enter</code> to run. Works for any ticker — unknown symbols get a clearly-labelled
+  model-estimated profile from the dynamic synthesizer.</div>
+  <div class="chips" id="chips"></div>
+
+  <div class="err" id="err"></div>
+
+  <div class="card progress" id="prog">
+    <div class="steps">
+      <div class="step" data-i="1"><span class="dot"></span>1 · Fundamentals &amp; DCF intrinsic valuation</div>
+      <div class="step" data-i="2"><span class="dot"></span>2 · Business model &amp; revenue architecture</div>
+      <div class="step" data-i="3"><span class="dot"></span>3 · Economic moat — 5-pillar scoring</div>
+      <div class="step" data-i="4"><span class="dot"></span>4 · Competitors &amp; main difference</div>
+      <div class="step" data-i="5"><span class="dot"></span>5 · Sentiment, news &amp; secular trends</div>
+      <div class="step" data-i="6"><span class="dot"></span>6 · Technicals — SMA / RSI / MACD / S-R</div>
+      <div class="step" data-i="7"><span class="dot"></span>7 · SWOT, thesis &amp; final verdict</div>
+    </div>
+  </div>
+
+  <div class="card result" id="res">
+    <div class="res-head">
+      <div><span class="res-ticker" id="rTicker"></span>
+        <div id="rName" class="muted" style="color:var(--muted)"></div>
+        <span class="est" id="rEst"></span></div>
+      <span class="badge" id="rBadge"></span>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Price</div><div class="v" id="rPrice"></div></div>
+      <div class="kpi"><div class="l">Fair value</div><div class="v" id="rIV"></div></div>
+      <div class="kpi"><div class="l">Upside</div><div class="v" id="rUp"></div></div>
+      <div class="kpi"><div class="l">Composite</div><div class="v" id="rScore"></div></div>
+    </div>
+    <div class="worth" id="rWorth"></div>
+    <div class="btnrow">
+      <a id="rOpen" href="#" target="_blank">Open full HTML report ↗</a>
+      <a id="rDl" href="#" download>Download report</a>
+    </div>
+  </div>
+
+  <div class="card reports">
+    <h3>Recent reports <a id="dlAll" href="/api/reports/zip" download style="float:right;font-size:12px;font-weight:600;text-decoration:none;color:var(--accent);padding:5px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg2)">⬇ Download all (zip)</a></h3>
+    <div id="rlist"><span style="color:var(--muted)">Loading…</span></div>
+  </div>
+</div>
+<script>
+(function(){
+  var root=document.documentElement;
+  var btn=document.getElementById('themeBtn');
+  var saved=null; try{saved=localStorage.getItem('sra-theme');}catch(e){}
+  if(saved){root.setAttribute('data-theme',saved);}
+  function paint(){btn.textContent=root.getAttribute('data-theme')==='light'?'🌙 Dark':'☀ Light';}
+  paint();
+  btn.onclick=function(){
+    var t=root.getAttribute('data-theme')==='light'?'dark':'light';
+    root.setAttribute('data-theme',t);
+    try{localStorage.setItem('sra-theme',t);}catch(e){}
+    paint();
+  };
+
+  var q=document.getElementById('q'), go=document.getElementById('go'),
+      chips=document.getElementById('chips'), dl=document.getElementById('tickers');
+
+  fetch('/api/profiles').then(function(r){return r.json();}).then(function(d){
+    if(!d.ok) return;
+    d.profiles.forEach(function(p){
+      var o=document.createElement('option'); o.value=p.ticker; o.label=p.name; dl.appendChild(o);
+      var c=document.createElement('span'); c.className='chip'; c.textContent=p.ticker;
+      c.title=p.name+' — '+p.sector;
+      c.onclick=function(){q.value=p.ticker; run();};
+      chips.appendChild(c);
+    });
+  }).catch(function(){});
+
+  q.addEventListener('keydown',function(e){if(e.key==='Enter')run();});
+  go.onclick=run;
+
+  var steps=document.querySelectorAll('.step');
+  function setStep(i){
+    steps.forEach(function(s){
+      var k=+s.dataset.i;
+      s.classList.toggle('done',k<i);
+      s.classList.toggle('active',k===i);
+    });
+  }
+  function anim(i){
+    setStep(i);
+    if(i<=7){setTimeout(function(){anim(i+1);},380);}
+  }
+
+  var err=document.getElementById('err'), prog=document.getElementById('prog'),
+      res=document.getElementById('res');
+  function showErr(m){err.textContent=m; err.style.display='block';}
+  function hideAll(){err.style.display='none'; res.style.display='none';}
+
+  async function run(){
+    var v=q.value.trim();
+    if(!v){showErr('Type a ticker or company name first.');return;}
+    hideAll(); prog.style.display='block'; res.style.display='none';
+    anim(1); go.disabled=true;
+    try{
+      var r=await fetch('/api/research',{method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ticker:v,name:v})});
+      var d=await r.json();
+      prog.style.display='none';
+      if(!d.ok){showErr(d.error||'Research failed.');return;}
+      document.getElementById('rTicker').textContent=d.ticker;
+      document.getElementById('rName').textContent=d.name;
+      document.getElementById('rEst').textContent =
+        d.data_quality==='estimated'?'⚠ model-estimated profile (not in KB)':'verified KB profile';
+      var b=document.getElementById('rBadge');
+      b.textContent=d.verdict;
+      b.className='badge '+(d.verdict.indexOf('BUY')>=0?'v-buy':d.verdict.indexOf('AVOID')>=0||d.verdict.indexOf('REDUCE')>=0?'v-avoid':'v-hold');
+      document.getElementById('rPrice').textContent=d.price.toLocaleString()+' '+d.currency;
+      document.getElementById('rIV').textContent=d.fair_value.toLocaleString(undefined,{maximumFractionDigits:2})+' '+d.currency;
+      document.getElementById('rUp').textContent=(d.upside>0?'+':'')+d.upside.toFixed(1)+'%';
+      document.getElementById('rScore').textContent=d.composite.toFixed(1)+' / 10';
+      document.getElementById('rWorth').textContent=d.worth;
+      document.getElementById('rOpen').href=d.url;
+      document.getElementById('rDl').href=d.url;
+      res.style.display='block';
+      res.scrollIntoView({behavior:'smooth',block:'nearest'});
+      loadReports();
+    }catch(e){
+      prog.style.display='none';
+      showErr('Request failed: '+e);
+    }finally{go.disabled=false;}
+  }
+
+  function loadReports(){
+    fetch('/api/reports').then(function(r){return r.json();}).then(function(d){
+      var el=document.getElementById('rlist');
+      var dlAll=document.getElementById('dlAll');
+      if(!d.ok||!d.reports.length){el.innerHTML='<span style="color:var(--muted)">No reports yet — run a research above.</span>';dlAll.style.display='none';return;}
+      dlAll.style.display='';
+      el.innerHTML=d.reports.map(function(x){
+        var dt=new Date(x.mtime*1000).toLocaleString();
+        return '<div class="rrow"><span>'+dt+'</span><a href="/reports/'+x.file+'" target="_blank">/reports/'+x.file+' ↗</a></div>';
+      }).join('');
+    }).catch(function(){
+      document.getElementById('rlist').innerHTML='<span style="color:var(--muted)">Could not load report list.</span>';
+    });
+  }
+  loadReports();
+})();
+</script>
+</body>
+</html>
