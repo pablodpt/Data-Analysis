@@ -28,7 +28,7 @@ def cmd_research(args: argparse.Namespace) -> int:
     ok = 0
     for q in queries:
         try:
-            result = research.run(q)
+            result = research.run(q, offline=args.offline)
             _print_summary(result)
             html = report_html.build(result)
             path = research.save_report(result, html)
@@ -63,6 +63,8 @@ def main(argv=None) -> int:
                     "with self-contained HTML reports.")
     ap.add_argument("tickers", nargs="*", help="tickers or company names to research")
     ap.add_argument("--list", action="store_true", help="list KB coverage and exit")
+    ap.add_argument("--offline", action="store_true",
+                    help="skip the live Stooq price fetch (use KB snapshot price)")
     ap.add_argument("--serve", action="store_true", help="run the interactive web app")
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--port", type=int, default=8000)

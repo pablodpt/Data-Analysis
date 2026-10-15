@@ -32,8 +32,8 @@ REPORTS_DIR = os.path.join(HERE, "reports")
 WEB_DIR = os.path.join(HERE, "web")
 
 
-def do_research(ticker: str, name: str = "") -> dict:
-    result = research.run(ticker if ticker else name)
+def do_research(ticker: str, name: str = "", offline: bool = False) -> dict:
+    result = research.run(ticker if ticker else name, offline=offline)
     html = report_html.build(result)
     path = research.save_report(result, html)
     meta = result["meta"]
@@ -46,6 +46,8 @@ def do_research(ticker: str, name: str = "") -> dict:
         url=f"/reports/{os.path.basename(path)}",
         price=meta["price"],
         currency=meta["currency"],
+        price_live=meta.get("price_live", False),
+        price_source=meta.get("price_source", ""),
         verdict=v["label"],
         composite=v["composite"],
         fair_value=v["iv"],
@@ -130,10 +132,11 @@ class Handler(BaseHTTPRequestHandler):
                 body = json.loads(self.rfile.read(ln) or b"{}")
                 ticker = (body.get("ticker") or "").strip()
                 name = (body.get("name") or "").strip()
+                offline = bool(body.get("offline"))
                 if not ticker and not name:
                     self._json({"ok": False, "error": "provide a ticker or company name"}, 400)
                     return
-                out = do_research(ticker, name)
+                out = do_research(ticker, name, offline=offline)
                 self._json(out)
             except Exception as e:  # noqa: BLE001
                 self._json({"ok": False, "error": str(e)}, 500)

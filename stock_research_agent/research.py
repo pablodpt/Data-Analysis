@@ -16,7 +16,7 @@ import datetime as _dt
 import math
 from typing import Any, Dict
 
-from . import indicators
+from . import indicators, live_data
 from .knowledge_base import get_profile
 
 REPORTS_DIR = "reports"  # relative to package dir, resolved in save_report
@@ -273,9 +273,43 @@ def build_verdict(fund: Dict[str, Any], moat: Dict[str, Any],
 # Orchestration
 # ---------------------------------------------------------------------------
 
-def run(query: str) -> Dict[str, Any]:
+def rebase_price(profile: Dict[str, Any], new_price: float) -> Dict[str, Any]:
+    """Return a copy of the profile with price-dependent fields scaled to a
+    live quote. Fundamental levels (revenue, margins, FCF, debt, EPS) stay on
+    the KB snapshot; only market-ratio fields are re-anchored to the price."""
+    p = dict(profile)
+    old = profile["price"] or new_price
+    r = new_price / old if old else 1.0
+    f = dict(profile["fundamentals"])
+    p["price"] = new_price
+    p["market_cap"] = profile["market_cap"] * r
+    p["low52"] = min(profile["low52"], new_price)
+    p["high52"] = max(profile["high52"], new_price)
+    if f.get("pe") and f.get("eps"):
+        f["pe"] = round(new_price / f["eps"], 1)
+    if f.get("fwd_pe"):
+        f["fwd_pe"] = round(f["fwd_pe"] * r, 1)
+    if f.get("ps"):
+        f["ps"] = round(f["ps"] * r, 2)
+    if f.get("ev_ebitda"):
+        f["ev_ebitda"] = round(f["ev_ebitda"] * r, 1)
+    if f.get("divy"):
+        f["divy"] = round(f["divy"] / r, 2)
+    p["fundamentals"] = f
+    return p
+
+
+def run(query: str, offline: bool = False) -> Dict[str, Any]:
     profile = get_profile(query)
     ticker = profile["ticker"]
+
+    # Live price (Stooq) when online; falls back to the KB snapshot on any
+    # failure so the agent always works, even fully offline.
+    live = None if offline else live_data.get_quote(ticker,
+                                                    profile.get("currency", "USD"))
+    if live and live.get("close"):
+        profile = rebase_price(profile, live["close"])
+        profile["live_quote"] = live
 
     fund = stage_fundamentals(profile)
     biz = stage_business(profile)
@@ -289,6 +323,11 @@ def run(query: str) -> Dict[str, Any]:
     verdict = build_verdict(fund, moat, sent, tech, profile)
 
     now = _dt.datetime.now()
+    lq = profile.get("live_quote")
+    if lq:
+        price_source = f"LIVE — Stooq {lq['symbol']} (close {lq['date']} {lq['time']})"
+    else:
+        price_source = "KB snapshot — October 15, 2026 (no live feed)"
     return dict(
         meta=dict(
             ticker=ticker, name=profile["name"], sector=profile["sector"],
@@ -297,8 +336,11 @@ def run(query: str) -> Dict[str, Any]:
             exchange=profile.get("exchange", ""), website=profile.get("website", ""),
             price=profile["price"], market_cap=profile["market_cap"],
             data_quality=profile.get("data_quality", "verified"),
+            price_source=price_source,
+            price_live=bool(lq),
             generated_at=now.strftime("%Y-%m-%d %H:%M"),
-            data_as_of="October 2026 (local intelligence KB) + computed technicals",
+            data_as_of=("price: " + (lq["date"] if lq else "October 2026")
+                        + " | fundamentals/news: local intelligence KB (Oct 2026)"),
             low52=profile["low52"], high52=profile["high52"],
         ),
         verdict=verdict,
@@ -318,8 +360,10 @@ def summary_lines(result: Dict[str, Any]) -> list:
     L = []
     L.append("=" * 78)
     L.append(f"  {m['name']}  [{m['ticker']}]   {m['sector']} — {m['industry']}")
-    L.append(f"  Price {m['price']:,.2f} {cur}   Mkt Cap {m['market_cap']/1e9:,.0f}B "
+    live_tag = "  [LIVE price]" if m.get("price_live") else ""
+    L.append(f"  Price {m['price']:,.2f} {cur}{live_tag}   Mkt Cap {m['market_cap']/1e9:,.0f}B "
              f"   52w {m['low52']:,.2f}–{m['high52']:,.2f}   ({m['data_quality']})")
+    L.append(f"  Price source: {m.get('price_source', 'n/a')}")
     L.append("-" * 78)
     L.append(f"  VERDICT:  {v['label']}   (composite {v['composite']}/10)")
     L.append(f"  Fair value (DCF/multiple): {v['iv']:,.2f} {cur}  "

@@ -36,11 +36,14 @@ No dependencies beyond the Python 3.9+ standard library.
 cd Data-Analysis
 
 # single or multiple tickers / company names
-python3 -m stock_research_agent NVDA
-python3 -m stock_research_agent "Inditex" "Apple" TTE.MC "Acme Technologies Corp"
+python -m stock_research_agent NVDA
+python -m stock_research_agent "Inditex" "Apple" TTE.MC "Acme Technologies Corp"
 
 # browse KB coverage
-python3 -m stock_research_agent --list
+python -m stock_research_agent --list
+
+# force the KB snapshot price (skip the live Stooq fetch)
+python -m stock_research_agent NVDA --offline
 ```
 
 Each run saves `stock_research_agent/reports/<TICKER>_research_report.html`
@@ -49,12 +52,13 @@ Each run saves `stock_research_agent/reports/<TICKER>_research_report.html`
 ### Web app
 
 ```bash
-python3 -m stock_research_agent --serve --host 0.0.0.0 --port 8000
+python -m stock_research_agent --serve --host 0.0.0.0 --port 8000
 ```
 
 Then open http://localhost:8000 — search any ticker or company name, watch
 the 7 pipeline stages run, get the verdict card, and open/download the
-HTML report. Reports persist across restarts.
+HTML report. Reports persist across restarts. The `POST /api/research`
+body accepts `{"offline": true}` to skip the live price fetch.
 
 ### Python API
 
@@ -71,19 +75,28 @@ print(v["label"], v["composite"], v["worth"])
 
 ## Coverage & data
 
-- **63 hand-compiled profiles** (data as of October 2026): 43 US/global
-  (NVDA, AAPL, MSFT, GOOGL, AMZN, META, AVGO, TSM, TSLA, PLTR, SPCX, JPM,
-  WMT, ASML, AMD, MU, LLY, UNH, BRK.A, …) and 20 European (ITX.MC, BBVA.MC,
-  SAN.MC, BIC.MC, ACA.MC, TEP.MC, IBE.MC, ENAG.MC, ANA.MC, ACS.MC, TTE.MC,
-  SAP, AIR.PA, NVO, SIE.DE, …).
+- **63 hand-compiled profiles** (fundamentals/news as of October 2026):
+  43 US/global (NVDA, AAPL, MSFT, GOOGL, AMZN, META, AVGO, TSM, TSLA, PLTR,
+  SPCX, JPM, WMT, ASML, AMD, MU, LLY, UNH, BRK.A, …) and 20 European
+  (ITX.MC, BBVA.MC, SAN.MC, BIC.MC, ACA.MC, TEP.MC, IBE.MC, ENAG.MC, ANA.MC,
+  ACS.MC, TTE.MC, SAP, AIR.PA, NVO, SIE.DE, …).
+- **Live price (optional, on by default):** at run time the agent fetches
+  the latest close from Stooq's free CSV endpoint (no API key, stdlib
+  `urllib`) and re-anchors every price-dependent field — price, market cap,
+  P/E, fwd P/E, P/S, EV/EBITDA, dividend yield, 52-week range, and the whole
+  technicals stack. A green **● LIVE** chip and a "Price is LIVE …" banner
+  appear in the report. If the network is down or the symbol is unknown it
+  silently falls back to the KB snapshot price and says so in the banner —
+  the agent always works, offline or online. Force the snapshot with
+  `--offline` (CLI) or `{"offline": true}` (API).
 - **Name resolution**: ~200 curated aliases + S&P 500 name list fuzzy
   matching (`"Santander"` → `SAN.MC`, `"Inditex Group"` → `ITX.MC`).
 - **Unknown names**: a seeded synthesizer derives a plausible profile from
   the sector rules and is clearly flagged **`data_quality: estimated`** in
   the report banner. Nothing is silently presented as verified data.
 - Technicals are computed from a **deterministic seeded OHLC series**
-  (same ticker → same chart, always ending at the current price) — they
-  demonstrate the analysis framework, not live market data.
+  anchored to the current price (live when the feed is reachable, otherwise
+  the KB snapshot) and the 52-week range — same inputs → same chart.
 
 ## Project layout
 
@@ -96,6 +109,7 @@ stock_research_agent/
 ├── kb_us.py             # 43 US/global profiles (Oct 2026 data)
 ├── kb_eu.py             # 20 European profiles (Oct 2026 data)
 ├── knowledge_base.py    # aliases, name→ticker, fuzzy match, synthesizer
+├── live_data.py         # live price quotes (Stooq CSV, stdlib urllib, cached)
 ├── research.py          # 7-stage pipeline, DCF, composite verdict
 ├── report_html.py       # standalone HTML builder (SVG charts, themes)
 ├── server.py            # ThreadingHTTPServer web app + JSON API
@@ -119,6 +133,7 @@ of how strong the moat and quality scores are.
 
 ## Disclaimer
 
-Research-framework output from locally compiled data (October 2026) plus
-deterministic synthetic technicals. **Not investment advice.** Verify
-against live fundamentals and prices before acting.
+Research-framework output: price is live (Stooq) when online, otherwise the
+October 2026 snapshot; fundamentals/news are the locally compiled October
+2026 KB; technicals are deterministic synthetic series. **Not investment
+advice.** Verify against primary sources before acting.

@@ -199,8 +199,16 @@ def build(result: Dict[str, Any]) -> str:
     # ---------------- KPI strip ----------------
     upside = fund["upside"]
     up_tone = "tone-up" if upside > 5 else "tone-dn" if upside < -5 else ""
+    if m.get("price_live"):
+        price_kpi = ('<div class="kpi"><div class="kpi-label">Last price '
+                     '<span class="live-chip">● LIVE</span></div>'
+                     f'<div class="kpi-value">{price:,.2f} {esc(cur)}</div>'
+                     f'<div class="kpi-sub">{esc(m.get("price_source", ""))}</div></div>')
+    else:
+        price_kpi = _kpi("Last price", f"{price:,.2f} {cur}",
+                         f"52w {m['low52']:,.2f} – {m['high52']:,.2f}")
     kpis = "".join([
-        _kpi("Last price", f"{price:,.2f} {cur}", f"52w {m['low52']:,.2f} – {m['high52']:,.2f}"),
+        price_kpi,
         _kpi("Fair value", money(v["iv"], cur), f"DCF / multiple model", up_tone),
         _kpi("Implied upside", pct(upside), "vs. fair value", up_tone),
         _kpi("Composite score", f"{v['composite']}/10",
@@ -348,9 +356,18 @@ def build(result: Dict[str, Any]) -> str:
                        'estimates for screening purposes, not audited fundamentals. Verify with '
                        'primary sources before acting.</div>')
     else:
-        data_banner = ('<div class="banner ok">Data as of October 2026, compiled from public market '
-                       'sources into the local intelligence KB. Technical indicators are computed '
-                       'from the deterministic 12-month price path anchored to the 52-week range.</div>')
+        if m.get("price_live"):
+            _price_note = ('<b>Price is LIVE</b> (fetched from Stooq at report time — '
+                           f'{esc(m.get("price_source", ""))}). ')
+        else:
+            _price_note = ('<b>Price is the KB snapshot</b> (October 15, 2026) — no live feed '
+                           'was reachable. Run <code>--offline</code> to force this, or go online '
+                           'for a live quote. ')
+        data_banner = ('<div class="banner ok">' + _price_note +
+                       'Fundamentals, sentiment & news are as of October 2026, compiled from public '
+                       'market sources into the local intelligence KB. Technical indicators are '
+                       'computed from the deterministic 12-month price path anchored to the '
+                       '52-week range.</div>')
 
     verdict_cls = ("v-buy" if v["label"] in ("STRONG BUY", "BUY")
                    else "v-hold" if v["label"] == "HOLD / WAIT" else "v-avoid")
@@ -560,6 +577,11 @@ h1{margin:6px 0 4px;font-size:28px}
 .kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .kpi-strip.small .kpi{padding:9px 11px}
+.live-chip{display:inline-block;background:color-mix(in srgb,var(--up) 18%, transparent);
+  color:var(--up);font-size:9.5px;font-weight:800;letter-spacing:.6px;
+  padding:1.5px 7px;border-radius:20px;vertical-align:1px;margin-left:4px;
+  animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
 .kpi-label{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.6px}
 .kpi-value{font-size:19px;font-weight:800;margin-top:3px}
 .kpi-sub{color:var(--muted);font-size:11.5px;margin-top:2px}
