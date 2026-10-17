@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0d0f" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <title>Marketwatch — Market dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="Marketwatch home"><span class="brand-mark"><span></span><span></span><span></span></span><span>market<span class="brand-light">watch</span></span></a>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-item active" href="#overview"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>Overview</a>
+        <a class="nav-item" href="#watchlist"><svg viewBox="0 0 24 24"><path d="M12 3.5v17M3.5 12h17"/><circle cx="12" cy="12" r="9"/></svg>Watchlist <span class="nav-count">8</span></a>
+        <a class="nav-item" href="#markets"><svg viewBox="0 0 24 24"><path d="M4 18V6m5 12V9m5 9V4m5 14v-7"/><path d="M2 21h20"/></svg>Markets</a>
+      </nav>
+      <div class="side-label watch-label">YOUR WATCHLIST <button class="tiny-plus" id="openAdd" aria-label="Add to watchlist">+</button></div>
+      <div class="side-watchlist" id="sideWatchlist"></div>
+      <div class="sidebar-bottom">
+        <div class="plan-card"><div class="plan-icon">✦</div><div><strong>Your market, in focus.</strong><p>Keep the signals that matter close.</p></div><button class="plan-arrow" aria-label="More information">↗</button></div>
+        <button class="profile"><span class="avatar">A</span><span class="profile-copy"><b>Alex Morgan</b><small>Personal workspace</small></span><span class="more-dots">···</span></button>
+      </div>
+    </aside>
+
+    <main class="main-content" id="overview">
+      <header class="topbar"><div class="crumb"><span>Workspace</span><i>/</i><b>Overview</b></div><div class="top-actions"><span class="demo-badge"><span></span> DEMO DATA</span><a class="download-link" href="marketwatch-download.zip" download>Download app <span>↓</span></a><button class="icon-button" aria-label="Search" id="searchButton"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button><button class="icon-button notification" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span></span></button><div class="top-avatar">A</div></div></header>
+      <div class="content-wrap">
+        <section class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> FRIDAY, OCTOBER 16, 2026</div><h1>Market overview<span class="heading-dot">.</span></h1><p class="subtitle">A clear view of the numbers moving markets.</p></div><button class="date-control"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="15" rx="2"/><path d="M8 3v5m8-5v5M3.5 10h17"/></svg>Today<span class="chevron">⌄</span></button></section>
+        <div class="sample-notice"><span class="notice-icon">i</span><span><b>Illustrative sample values</b> · This dashboard is a design demo; quotes are not live market data.</span><button id="dismissNotice" aria-label="Dismiss notice">×</button></div>
+
+        <section class="section-block" id="markets"><div class="section-heading"><div><h2>Major indices</h2><p class="section-sub">The pulse of the market</p></div><button class="text-action" id="allMarkets">All markets <span>↗</span></button></div>
+          <div class="index-grid" id="indexGrid"></div>
+        </section>
+
+        <div class="dashboard-grid">
+          <section class="panel chart-panel"><div class="panel-head"><div><div class="panel-kicker">MARKET PERFORMANCE <span class="live-dot"></span></div><div class="chart-title-row"><h2 id="chartName">S&amp;P 500</h2><span class="chart-symbol" id="chartSymbol">SPX</span></div></div><button class="select-control" id="indexSelect">S&amp;P 500 <span>⌄</span></button></div>
+            <div class="chart-metric"><strong id="chartValue">5,842.47</strong><span class="positive" id="chartChange">+0.68%</span><span class="metric-period">today</span></div>
+            <div class="chart-wrap"><div class="chart-ylabels"><span>5,900</span><span>5,850</span><span>5,800</span><span>5,750</span></div><div class="chart-plot" id="chartPlot"><svg id="marketChart" viewBox="0 0 800 245" preserveAspectRatio="none" role="img" aria-label="Illustrative index performance chart"></svg><div class="chart-tooltip" id="chartTooltip"><b>5,842.47</b><small>Oct 16, 2026 · 4:00 PM</small></div></div></div>
+            <div class="chart-xlabels"><span>09:30</span><span>11:00</span><span>12:30</span><span>14:00</span><span>16:00</span></div>
+            <div class="chart-footer"><div class="range-tabs" id="rangeTabs"><button class="selected" data-range="1D">1D</button><button data-range="1W">1W</button><button data-range="1M">1M</button><button data-range="3M">3M</button><button data-range="1Y">1Y</button><button data-range="ALL">ALL</button></div><div class="chart-legend"><span></span> Index value</div></div>
+          </section>
+          <section class="panel movers-panel"><div class="panel-head"><div><div class="panel-kicker">TODAY'S MOVERS</div><h2>In the spotlight</h2></div><button class="more-button" aria-label="More options">···</button></div><div class="mover-tabs"><button class="selected" data-mover="gainers">Top gainers</button><button data-mover="losers">Top losers</button></div><div class="mover-list" id="moverList"></div><button class="view-watchlist" id="viewWatchlist">View watchlist <span>→</span></button></section>
+        </div>
+
+        <section class="section-block bottom-section"><div class="section-heading"><div><h2>Market snapshot</h2><p class="section-sub">Key values at a glance</p></div><span class="snapshot-updated"><span></span> SAMPLE SNAPSHOT</span></div><div class="snapshot-grid" id="snapshotGrid"></div></section>
+        <footer><span>Marketwatch <span class="footer-dot">·</span> Built for a clearer view of the markets.</span><span>Quotes shown are illustrative only. Not investment advice.</span></footer>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <dialog id="addDialog"><form method="dialog" class="add-form"><button class="dialog-close" aria-label="Close">×</button><div class="dialog-kicker">YOUR WATCHLIST</div><h2>Add a ticker</h2><p>Search and add a company to your watchlist.</p><label for="tickerInput">Ticker or company name</label><div class="input-row"><input id="tickerInput" placeholder="Try NVDA or Nvidia" autocomplete="off"><button type="button" id="addTicker">Add</button></div><div class="suggestions" id="suggestions"></div></form></dialog>
+  <script src="app.js"></script>
+</body>
+</html>
